@@ -1,17 +1,26 @@
 import 'dart:math';
+import 'package:ava_frontend/configurationManager.dart';
 import 'package:flutter/material.dart';
 
 class OptionsMenu extends StatefulWidget {
-  const OptionsMenu({super.key});
+  final ConfigurationManager configManager;
+  const OptionsMenu({super.key, required this.configManager});
 
   @override
   _OptionsMenuState createState() => _OptionsMenuState();
 }
 
 class _OptionsMenuState extends State<OptionsMenu> {
+  late ConfigurationManager configManager;
   String _options = '';
   String _optionsResult = '';
   final _optionsController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    configManager = widget.configManager;
+  }
 
   void _generateOptions() {
     setState(() {
@@ -29,6 +38,15 @@ class _OptionsMenuState extends State<OptionsMenu> {
       _optionsResult = '';
       _optionsController.clear();
     });
+  }
+
+  void _jourNuit() {
+    configManager.updateStyle();
+    print('Style: ${configManager.getStyle()}');
+  }
+
+  void _retourMain() {
+    Navigator.pop(context);
   }
 
   @override
@@ -72,6 +90,13 @@ class _OptionsMenuState extends State<OptionsMenu> {
               onPressed: _clearOptions,
               child: const Text('Clear Options'),
             ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _jourNuit,
+              child: const Text('Changer du jour à la nuit !'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(onPressed: _retourMain, child: const Text('Retour')),
           ],
         ),
       ),
