@@ -12,14 +12,14 @@ class LifeStyleEditingMenu extends StatefulWidget {
 
 class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
   late ConfigurationManager configManager;
-
+  late List<List<Task>> _allLifeStyles;
   @override
   void initState() {
     super.initState();
     configManager = widget.configManager;
+    _allLifeStyles = configManager.allLifeStyles.value;
   }
 
-  List<List<Task>> _allLifeStyles = [];
   List<Task> _lifeStyle = List<Task>.generate(
       24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
 
@@ -32,7 +32,10 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
   void _confirmLifeStyle() {
     setState(() {
       _allLifeStyles.add(List<Task>.from(_lifeStyle));
+
+      configManager.updateAllLifeStyles(_allLifeStyles);
       configManager.updateLifeStyle(_allLifeStyles.last);
+
       _lifeStyle = List<Task>.generate(
           24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
     });
