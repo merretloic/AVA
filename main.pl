@@ -326,7 +326,7 @@ tester_regles :-
     format('Sommeil: ~w~n', [MessageSommeil]),
     
     % Vérification de l activité physique
-    verifier_activite(Age, Activite, Activite_intense, Musculation, MessageActivite),
+    verifier_activite(Age, Activite, Activite_intense, Musculation),
     format('Activités: ~w~n', [MessageActivite]),
     
     % Vérification des calories
@@ -334,7 +334,7 @@ tester_regles :-
     format('Calories: ~w~n', [MessageKcal]),
     
     % Vérification de l hydratation
-    verifier_eau(Age, Sexe, Eau, MessageEau),
+    verifier_eau(Age, Eau, MessageEau),
     format('Eau: ~w~n', [MessageEau]).
 
 
