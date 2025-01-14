@@ -1,4 +1,5 @@
-import 'package:ava_frontend/lifeStyleEditing.dart';
+import 'package:ava_frontend/lifeStyleSummary.dart';
+import 'package:ava_frontend/tasks.dart';
 import 'package:flutter/material.dart';
 import 'optionsMenu.dart';
 import 'configurationManager.dart';
@@ -62,11 +63,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _lifeStyleEditingMenu() {
+  void _lifeStyleSummaryMenu() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const LifeStyleEditingMenu(),
+        builder: (context) =>
+            LifeStyleSummaryMenu(configManager: configManager),
       ),
     );
   }
@@ -97,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 FloatingActionButton(
                   heroTag: 'lifestyle',
                   onPressed: () {
-                    _lifeStyleEditingMenu();
+                    _lifeStyleSummaryMenu();
                   },
                   tooltip: 'Favorite',
                   child: const Icon(Icons.favorite),
@@ -113,6 +115,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   valueListenable: configManager.styleNotifier,
                   builder: (context, value, child) {
                     return Text('Il fait : $value');
+                  },
+                ),
+                ValueListenableBuilder<List<Task>>(
+                  valueListenable: configManager.currentLifeStyle,
+                  builder: (context, value, child) {
+                    return Text(
+                        'Tâche actuelle : ${value[DateTime.now().hour].name}');
                   },
                 ),
                 const Text('You have pushed the button this many times:'),
