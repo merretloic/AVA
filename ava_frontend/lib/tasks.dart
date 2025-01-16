@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 abstract class Task {
-  final String name;
-  final int durationInHours;
+  String name;
+  int durationInHours;
   late Icon icon;
   late Color color;
 
@@ -11,13 +11,50 @@ abstract class Task {
     required this.durationInHours,
   });
 
+  Task copyWith(
+      {String? name, int? durationInHours, Color? color, Icon? icon}) {
+    if (this is EmptyTask) {
+      return EmptyTask()
+        ..name = name ?? this.name
+        ..durationInHours = durationInHours ?? this.durationInHours
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else if (this is SleepTask) {
+      return SleepTask(
+        name: name ?? this.name,
+        durationInHours: durationInHours ?? this.durationInHours,
+      )
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else if (this is EatTask) {
+      return EatTask(
+        name: name ?? this.name,
+        durationInHours: durationInHours ?? this.durationInHours,
+        foodType: (this as EatTask).foodType,
+      )
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else if (this is RunTask) {
+      return RunTask(
+        name: name ?? this.name,
+        durationInHours: durationInHours ?? this.durationInHours,
+        targetDistance: (this as RunTask).targetDistance,
+      )
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else {
+      throw Exception('Unknown task type');
+    }
+  }
+
   // Common method for all task types
   void displayDetails() {
-    print('Task: $name, Duration: $durationInHours hours');
+    debugPrint('Task: $name, Duration: $durationInHours hours');
   }
 }
 
 class EmptyTask extends Task {
+  static const type = 'Empty';
   @override
   final Icon icon = const Icon(Icons.do_not_disturb);
   @override
@@ -27,6 +64,7 @@ class EmptyTask extends Task {
 }
 
 class SleepTask extends Task {
+  static const type = 'Sleep';
   @override
   final Icon icon = const Icon(Icons.bedtime);
   @override
@@ -45,6 +83,7 @@ class SleepTask extends Task {
 }
 
 class EatTask extends Task {
+  static const type = 'Eat';
   final List<String> foodType;
   @override
   final Icon icon = const Icon(Icons.food_bank);
@@ -65,6 +104,7 @@ class EatTask extends Task {
 }
 
 class RunTask extends Task {
+  static const type = 'Run';
   final double targetDistance;
   @override
   final Icon icon = const Icon(Icons.directions_run);
