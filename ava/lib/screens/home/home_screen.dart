@@ -4,6 +4,7 @@ import 'package:ava/lifeStyleSummary.dart';
 import 'package:ava/tasks.dart';
 import 'package:ava/configurationManager.dart';
 import 'package:ava/screens/quiz_page.dart';
+import 'package:ava/services/websocket_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.config});
@@ -16,13 +17,48 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final ConfigurationManager configManager;
+  late WebSocketService _webSocketService;
   String get style => configManager.style;
+
+  String _webSocketResponse = '';
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     configManager = widget.config;
+
+    // Initialise WebSocket service
+    _webSocketService = WebSocketService(
+      onMessage: (data) {
+        setState(() {
+          _webSocketResponse = data;
+          _isLoading = false;
+        });
+      },
+      onError: (error) {
+        setState(() {
+          _webSocketResponse = 'Erreur : $error';
+          _isLoading = false;
+        });
+      },
+    );
+
     debugPrint(configManager.style); // Ajout de l'instruction debugPrint
+  }
+
+  @override
+  void dispose() {
+    _webSocketService.dispose();
+    super.dispose();
+  }
+
+  void _sendSleepHours(double hours) {
+    setState(() {
+      _isLoading = true;
+      _webSocketResponse = '';
+    });
+    _webSocketService.sendSleepData(hours);
   }
 
   void _optionMenu() {
@@ -139,6 +175,23 @@ class _MyHomePageState extends State<MyHomePage> {
                         'Tâche actuelle : ${value[DateTime.now().hour].name}');
                   },
                 ),
+                const SizedBox(height: 20),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: () {
+                          _sendSleepHours(8); // Exemple : envoi de 8 heures
+                        },
+                        child: const Text('Envoyer heures de sommeil'),
+                      ),
+                const SizedBox(height: 20),
+                if (_webSocketResponse.isNotEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text('Réponse WebSocket : $_webSocketResponse'),
+                    ),
+                  ),
               ],
             ),
           ),
