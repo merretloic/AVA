@@ -3,6 +3,7 @@ import 'package:ava_frontend/tasks.dart';
 import 'package:flutter/material.dart';
 import 'optionsMenu.dart';
 import 'configurationManager.dart';
+import 'quiz_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,7 +38,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   late final ConfigurationManager configManager;
   String get style => configManager.style;
 
@@ -45,13 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     configManager = widget.config;
-    print(configManager.style); // Ajout de l'instruction print
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+    debugPrint(configManager.style); // Ajout de l'instruction debugPrint
   }
 
   void _optionMenu() {
@@ -73,6 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _formMenu() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizPage(configManager: configManager),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,26 +88,61 @@ class _MyHomePageState extends State<MyHomePage> {
           Positioned(
             top: 0,
             left: 0,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  heroTag: 'settings',
-                  onPressed: () {
-                    _optionMenu();
-                  },
-                  tooltip: 'Settings',
-                  child: const Icon(Icons.settings),
-                ),
-                const SizedBox(height: 10),
-                FloatingActionButton(
-                  heroTag: 'lifestyle',
-                  onPressed: () {
-                    _lifeStyleSummaryMenu();
-                  },
-                  tooltip: 'Favorite',
-                  child: const Icon(Icons.favorite),
-                ),
-              ],
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                  const SizedBox(width: 30),
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                        heroTag: 'settings',
+                        onPressed: () {
+                          _optionMenu();
+                        },
+                        tooltip: 'Settings',
+                        child: const Icon(Icons.settings),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton(
+                        heroTag: 'lifestyle',
+                        onPressed: () {
+                          _lifeStyleSummaryMenu();
+                        },
+                        tooltip: 'Favorite',
+                        child: const Icon(Icons.favorite),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 200),
+                  Expanded(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 2,
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: const SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tâche : Repas',
+                              style: TextStyle(fontSize: 32),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Aliments :\n- Dinde (200 gr)\n- Féculents (100 gr)\n- Légumes verts (200 gr)',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 100),
+                ],
+              ),
             ),
           ),
           Center(
@@ -124,21 +162,46 @@ class _MyHomePageState extends State<MyHomePage> {
                         'Tâche actuelle : ${value[DateTime.now().hour].name}');
                   },
                 ),
-                const Text('You have pushed the button this many times:'),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'increment',
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      bottomNavigationBar: GestureDetector(
+        onTap: () {
+          _formMenu();
+        },
+        child: ValueListenableBuilder<bool>(
+          valueListenable: configManager.isFormFilledNotifier,
+          builder: (context, isFormFilled, child) {
+            return Container(
+              padding: const EdgeInsets.all(10.0),
+              margin: const EdgeInsets.only(bottom: 20.0),
+              decoration: BoxDecoration(
+                color: isFormFilled
+                    ? Colors.lightBlueAccent
+                    : const Color.fromARGB(255, 255, 255, 121),
+                border: Border.all(color: Colors.black),
+              ),
+              child: FractionallySizedBox(
+                widthFactor: 2 / 3,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.warning, color: Colors.black),
+                    const SizedBox(width: 10),
+                    Text(
+                      isFormFilled
+                          ? 'Merci pour avoir remplis le formulaire !'
+                          : 'Attention, vous n\'avez pas encore remplis votre formulaire pour la journée !',
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

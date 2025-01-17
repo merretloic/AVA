@@ -8,6 +8,7 @@ class ConfigurationManager {
   ValueNotifier<List<List<Task>>> _allLifeStyles =
       ValueNotifier<List<List<Task>>>(
           [List<Task>.generate(24, (index) => EmptyTask())]);
+  final ValueNotifier<bool> _isFormFilled = ValueNotifier<bool>(false);
 
   String get style => _styleNotifier.value;
 
@@ -21,6 +22,10 @@ class ConfigurationManager {
 
   String getLifeStyle() {
     return _currentLifeStyle.value.toString();
+  }
+
+  bool getIsFormFilled() {
+    return _isFormFilled.value;
   }
 
   void updateStyle() {
@@ -40,7 +45,14 @@ class ConfigurationManager {
     _allLifeStyles.value = newAllLifeStyles;
   }
 
+  void updateIsFormFilled() {
+    _isFormFilled.value = !_isFormFilled.value;
+  }
+
+  bool get isFormFilled => _isFormFilled.value;
+
   ValueNotifier<String> get styleNotifier => _styleNotifier;
   ValueNotifier<List<Task>> get currentLifeStyle => _currentLifeStyle;
   ValueNotifier<List<List<Task>>> get allLifeStyles => _allLifeStyles;
+  ValueNotifier<bool> get isFormFilledNotifier => _isFormFilled;
 }
