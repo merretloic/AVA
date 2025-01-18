@@ -326,6 +326,8 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 DragTask(initPos: const Offset(0.0, 240.0), taskID: 1),
                 DragTask(initPos: const Offset(120.0, 240.0), taskID: 2),
                 DragTask(initPos: const Offset(240.0, 240.0), taskID: 3),
+                DragTask(initPos: const Offset(360.0, 240.0), taskID: 4),
+                DragTask(initPos: const Offset(480.0, 240.0), taskID: 5),
               ],
             ),
           ),
@@ -376,6 +378,8 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 DragTask(initPos: const Offset(0.0, 240.0), taskID: 1),
                 DragTask(initPos: const Offset(120.0, 240.0), taskID: 2),
                 DragTask(initPos: const Offset(240.0, 240.0), taskID: 3),
+                DragTask(initPos: const Offset(360.0, 240.0), taskID: 4),
+                DragTask(initPos: const Offset(480.0, 240.0), taskID: 5),
               ],
             ),
           ),
@@ -460,6 +464,10 @@ class DragTask extends StatefulWidget {
             name: "repas", durationInHours: 1, foodType: ["pasta", "salad"]);
       case 3:
         return RunTask(name: "course", durationInHours: 1, targetDistance: 1.0);
+      case 4:
+        return StudyTask(name: "étudier", durationInHours: 1);
+      case 5:
+        return FreeTimeTask(name: "temps libre", durationInHours: 1);
       default:
         return SleepTask(name: "sommeil", durationInHours: 1);
     }

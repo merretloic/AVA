@@ -27,8 +27,9 @@ class _QuizPageState extends State<QuizPage> {
     },
     {
       "type": "timeline",
-      "question": "Sélectionnez une année",
-      "options": ["2000", "2025"]
+      "question":
+          "Combien d'heures de sommeil avez-vous dormi hier soir (basé sur votre style de vie actuel) ?",
+      "options": ["0", "8"]
     },
   ];
 
@@ -114,7 +115,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Année sélectionnée : ${selectedYear.toInt()}',
+                  'Temps dormi : ${selectedYear.toInt()}h',
                   style: const TextStyle(fontSize: 18),
                 ),
               ],
@@ -156,26 +157,31 @@ class _QuizPageState extends State<QuizPage> {
       appBar: AppBar(
         title: const Text("Formulaire"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              currentQuestion["question"],
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            _printQuestionAnswers(
-                currentQuestion, List<String>.from(currentQuestion["options"])),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                _nextQuestion();
-              },
-              child: const Text("Suivant", style: TextStyle(fontSize: 18)),
-            ),
-          ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                currentQuestion["question"],
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              _printQuestionAnswers(currentQuestion,
+                  List<String>.from(currentQuestion["options"])),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _nextQuestion();
+                },
+                child: const Text("Suivant", style: TextStyle(fontSize: 18)),
+              ),
+            ],
+          ),
         ),
       ),
     );

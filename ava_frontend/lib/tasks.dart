@@ -123,3 +123,41 @@ class RunTask extends Task {
     print('Course sur : $targetDistance km');
   }
 }
+
+class StudyTask extends Task {
+  static const type = 'Study';
+  @override
+  final Icon icon = const Icon(Icons.book);
+  @override
+  final Color color = Colors.purple;
+
+  StudyTask({
+    required String name,
+    required int durationInHours,
+  }) : super(name: name, durationInHours: durationInHours);
+
+  @override
+  void displayDetails() {
+    super.displayDetails();
+    print('Study Duration: $durationInHours hours');
+  }
+}
+
+class FreeTimeTask extends Task {
+  static const type = 'FreeTime';
+  @override
+  final Icon icon = const Icon(Icons.free_breakfast);
+  @override
+  final Color color = Colors.cyan;
+
+  FreeTimeTask({
+    required String name,
+    required int durationInHours,
+  }) : super(name: name, durationInHours: durationInHours);
+
+  @override
+  void displayDetails() {
+    super.displayDetails();
+    print('Free Time Duration: $durationInHours hours');
+  }
+}
