@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'optionsMenu.dart';
 import 'configurationManager.dart';
 import 'quiz_page.dart';
+import 'carousel.dart'; // Import du fichier Carousel
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +13,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     ConfigurationManager config = ConfigurationManager();
@@ -39,13 +39,31 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final ConfigurationManager configManager;
-  String get style => configManager.style;
+  late int currentIndex;
 
   @override
   void initState() {
     super.initState();
     configManager = widget.config;
-    debugPrint(configManager.style); // Ajout de l'instruction debugPrint
+    currentIndex = DateTime.now().hour;
+
+    configManager.currentLifeStyle.addListener(() {
+      setState(() {
+        currentIndex = DateTime.now().hour;
+      });
+    });
+  }
+
+  void _navigateToPreviousTask() {
+    setState(() {
+      currentIndex = (currentIndex - 1 + 24) % 24;
+    });
+  }
+
+  void _navigateToNextTask() {
+    setState(() {
+      currentIndex = (currentIndex + 1) % 24;
+    });
   }
 
   void _optionMenu() {
@@ -80,89 +98,63 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Row(
-                children: [
-                  const SizedBox(width: 30),
-                  Column(
-                    children: [
-                      FloatingActionButton(
-                        heroTag: 'settings',
-                        onPressed: () {
-                          _optionMenu();
-                        },
-                        tooltip: 'Settings',
-                        child: const Icon(Icons.settings),
-                      ),
-                      const SizedBox(height: 10),
-                      FloatingActionButton(
-                        heroTag: 'lifestyle',
-                        onPressed: () {
-                          _lifeStyleSummaryMenu();
-                        },
-                        tooltip: 'Favorite',
-                        child: const Icon(Icons.favorite),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 200),
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 2,
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
-                      ),
-                      child: const SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tâche : Repas',
-                              style: TextStyle(fontSize: 32),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Aliments :\n- Dinde (200 gr)\n- Féculents (100 gr)\n- Légumes verts (200 gr)',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 100),
-                ],
+        backgroundColor: Colors.black, // Couleur noire pour la barre
+        toolbarHeight: 80, // Hauteur de la barre augmentée
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/logo.png', // Chemin du logo
+              height: 50, // Hauteur agrandie
+              width: 50, // Largeur agrandie
+            ),
+            const SizedBox(width: 10), // Espacement entre l'image et le texte
+            const Text(
+              "AVA",
+              style: TextStyle(
+                color: Colors.white, // Texte en blanc
+                fontSize: 24, // Taille du texte augmentée
+                fontWeight: FontWeight.bold, // Texte en gras
               ),
             ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 30), // Espace supplémentaire pour descendre les boutons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(width: 30),
+              Column(
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'settings',
+                    backgroundColor: Colors.black, // Fond noir
+                    onPressed: _optionMenu,
+                    tooltip: 'Settings',
+                    child: const Icon(Icons.settings, color: Colors.white), // Icône blanche
+                  ),
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
+                    heroTag: 'lifestyle',
+                    backgroundColor: Colors.black, // Fond noir
+                    onPressed: _lifeStyleSummaryMenu,
+                    tooltip: 'Lifestyle Summary',
+                    child: const Icon(Icons.favorite, color: Colors.white), // Icône blanche
+                  ),
+                ],
+              ),
+            ],
           ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                ValueListenableBuilder<String>(
-                  valueListenable: configManager.styleNotifier,
-                  builder: (context, value, child) {
-                    return Text('Il fait : $value');
-                  },
-                ),
-                ValueListenableBuilder<List<Task>>(
-                  valueListenable: configManager.currentLifeStyle,
-                  builder: (context, value, child) {
-                    return Text(
-                        'Tâche actuelle : ${value[DateTime.now().hour].name}');
-                  },
-                ),
-              ],
+          Expanded(
+            child: Center(
+              child: Carousel(
+                configManager: configManager,
+                currentIndex: currentIndex,
+                onPrevious: _navigateToPreviousTask,
+                onNext: _navigateToNextTask,
+              ),
             ),
           ),
         ],
