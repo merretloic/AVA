@@ -3,26 +3,103 @@ import 'package:flutter/material.dart';
 import 'optionsMenu.dart';
 import 'configurationManager.dart';
 import 'quiz_page.dart';
-import 'carousel.dart'; // Import du fichier Carousel
+import 'carousel.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    ConfigurationManager config = ConfigurationManager();
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  late ConfigurationManager config;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    config = ConfigurationManager();
+
+    // Configuration initiale des notifications
+    _initializeNotifications();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    debugPrint("Notifications initialized");
+  }
+
+  Future<void> _showNotification(String taskName) async {
+    if (config.currentLifeStyle.value.isNotEmpty) {
+      taskName = config.currentLifeStyle.value[DateTime.now().hour].name;
+    } else {
+      debugPrint("Tâche non trouvée ou configuration non initialisée.");
+      return;
+    }
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id', // Remplacez par un ID de canal valide
+      'your_channel_name', // Remplacez par un nom de canal valide
+      channelDescription: 'your_channel_description', // Ajoutez une description
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    // Afficher une notification
+    await flutterLocalNotificationsPlugin.show(
+      0, // ID unique pour la notification
+      'Task Reminder',
+      'You have a pending task: $taskName',
+      platformChannelSpecifics,
+    );
+    debugPrint("Notification shown: $taskName");
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // Lorsque l'application passe en arrière-plan
+      debugPrint("App is in background");
+      String taskName = config.currentLifeStyle.value[DateTime.now().hour].name;
+      _showNotification('Tâche actuelle : $taskName');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Ava life assistant',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page', config: config),
+      home: MyHomePage(title: 'Ava life assistant', config: config),
     );
   }
 }
@@ -120,8 +197,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          const SizedBox(
-              height: 30), // Espace supplémentaire pour descendre les boutons
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -146,6 +221,36 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Colors.white), // Icône blanche
                   ),
                 ],
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    child: SingleChildScrollView(
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tâche : Repas',
+                              style: TextStyle(fontSize: 32),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Aliments :\n- Dinde (200 gr)\n- Féculents (100 gr)\n- Légumes verts (200 gr)',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
