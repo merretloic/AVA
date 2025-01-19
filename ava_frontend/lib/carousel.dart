@@ -8,12 +8,12 @@ class Carousel extends StatelessWidget {
   final Function onNext;
 
   const Carousel({
-    Key? key,
+    super.key,
     required this.configManager,
     required this.currentIndex,
     required this.onPrevious,
     required this.onNext,
-  }) : super(key: key);
+  });
 
   String _getActivityTimeRange(int index) {
     final startHour = index;
@@ -38,36 +38,43 @@ class Carousel extends StatelessWidget {
           children: [
             // Activité précédente
             Positioned(
-              left: -200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: configManager
-                          .currentLifeStyle
-                          .value[(currentIndex - 1 + 24) %
-                              configManager.currentLifeStyle.value.length]
-                          .color
-                          .withOpacity(0.5),
-                    ),
-                    padding: const EdgeInsets.all(80),
-                    child: Icon(
-                      configManager
-                          .currentLifeStyle
-                          .value[(currentIndex - 1 + 24) %
-                              configManager.currentLifeStyle.value.length]
-                          .icon.icon,
-                      size: 70,
-                      color: configManager
-                          .currentLifeStyle
-                          .value[(currentIndex - 1 + 24) %
-                              configManager.currentLifeStyle.value.length]
-                          .icon.color,
-                    ),
+              left: -100,
+              child: SizedBox(
+                height: 150,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[(currentIndex - 1 + 24) %
+                                  configManager.currentLifeStyle.value.length]
+                              .color
+                              .withOpacity(0.5),
+                        ),
+                        padding: const EdgeInsets.all(80),
+                        child: Icon(
+                          configManager
+                              .currentLifeStyle
+                              .value[(currentIndex - 1 + 24) %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .icon,
+                          size: 70,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[(currentIndex - 1 + 24) %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .color,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             // Flèche précédente
@@ -75,7 +82,8 @@ class Carousel extends StatelessWidget {
               left: 20,
               top: 400,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back, size: 48, color: Colors.black),
+                icon:
+                    const Icon(Icons.arrow_back, size: 48, color: Colors.black),
                 onPressed: () => onPrevious(),
               ),
             ),
@@ -83,41 +91,52 @@ class Carousel extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: configManager
-                        .currentLifeStyle
-                        .value[currentIndex %
-                            configManager.currentLifeStyle.value.length]
-                        .color
-                        .withOpacity(0.8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: configManager
-                            .currentLifeStyle
-                            .value[currentIndex %
-                                configManager.currentLifeStyle.value.length]
-                            .color
-                            .withOpacity(0.6),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                // Envelopper le Stack avec un widget SizedBox ou autre
+                SizedBox(
+                  height: 300,
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[currentIndex %
+                                  configManager.currentLifeStyle.value.length]
+                              .color
+                              .withOpacity(0.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: configManager
+                                  .currentLifeStyle
+                                  .value[currentIndex %
+                                      configManager
+                                          .currentLifeStyle.value.length]
+                                  .color
+                                  .withOpacity(0.6),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(150),
+                        child: Icon(
+                          configManager
+                              .currentLifeStyle
+                              .value[currentIndex %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .icon,
+                          size: 90,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[currentIndex %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .color,
+                        ),
                       ),
                     ],
-                  ),
-                  padding: const EdgeInsets.all(150),
-                  child: Icon(
-                    configManager
-                        .currentLifeStyle
-                        .value[currentIndex %
-                            configManager.currentLifeStyle.value.length]
-                        .icon.icon,
-                    size: 90,
-                    color: configManager
-                        .currentLifeStyle
-                        .value[currentIndex %
-                            configManager.currentLifeStyle.value.length]
-                        .icon.color,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -151,36 +170,43 @@ class Carousel extends StatelessWidget {
             ),
             // Activité suivante
             Positioned(
-              right: -200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: configManager
-                          .currentLifeStyle
-                          .value[(currentIndex + 1) %
-                              configManager.currentLifeStyle.value.length]
-                          .color
-                          .withOpacity(0.5),
-                    ),
-                    padding: const EdgeInsets.all(80),
-                    child: Icon(
-                      configManager
-                          .currentLifeStyle
-                          .value[(currentIndex + 1) %
-                              configManager.currentLifeStyle.value.length]
-                          .icon.icon,
-                      size: 70,
-                      color: configManager
-                          .currentLifeStyle
-                          .value[(currentIndex + 1) %
-                              configManager.currentLifeStyle.value.length]
-                          .icon.color,
-                    ),
+              right: -100,
+              child: SizedBox(
+                height: 150,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[(currentIndex + 1) %
+                                  configManager.currentLifeStyle.value.length]
+                              .color
+                              .withOpacity(0.5),
+                        ),
+                        padding: const EdgeInsets.all(80),
+                        child: Icon(
+                          configManager
+                              .currentLifeStyle
+                              .value[(currentIndex + 1) %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .icon,
+                          size: 70,
+                          color: configManager
+                              .currentLifeStyle
+                              .value[(currentIndex + 1) %
+                                  configManager.currentLifeStyle.value.length]
+                              .icon
+                              .color,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             // Flèche suivante
@@ -188,7 +214,8 @@ class Carousel extends StatelessWidget {
               right: 20,
               top: 400,
               child: IconButton(
-                icon: const Icon(Icons.arrow_forward, size: 48, color: Colors.black),
+                icon: const Icon(Icons.arrow_forward,
+                    size: 48, color: Colors.black),
                 onPressed: () => onNext(),
               ),
             ),

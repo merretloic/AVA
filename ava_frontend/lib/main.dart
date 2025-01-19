@@ -1,5 +1,4 @@
 import 'package:ava_frontend/lifeStyleSummary.dart';
-import 'package:ava_frontend/tasks.dart';
 import 'package:flutter/material.dart';
 import 'optionsMenu.dart';
 import 'configurationManager.dart';
@@ -121,7 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 30), // Espace supplémentaire pour descendre les boutons
+          const SizedBox(
+              height: 30), // Espace supplémentaire pour descendre les boutons
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -133,7 +133,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.black, // Fond noir
                     onPressed: _optionMenu,
                     tooltip: 'Settings',
-                    child: const Icon(Icons.settings, color: Colors.white), // Icône blanche
+                    child: const Icon(Icons.settings,
+                        color: Colors.white), // Icône blanche
                   ),
                   const SizedBox(height: 10),
                   FloatingActionButton(
@@ -141,7 +142,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.black, // Fond noir
                     onPressed: _lifeStyleSummaryMenu,
                     tooltip: 'Lifestyle Summary',
-                    child: const Icon(Icons.favorite, color: Colors.white), // Icône blanche
+                    child: const Icon(Icons.favorite,
+                        color: Colors.white), // Icône blanche
                   ),
                 ],
               ),
