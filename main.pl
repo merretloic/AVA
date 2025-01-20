@@ -335,7 +335,15 @@ tester_regles :-
     
     % Vérification de l hydratation
     verifier_eau(Age, Eau, MessageEau),
-    format('Eau: ~w~n', [MessageEau]).
+    format('Eau: ~w~n', [MessageEau]),
+
+
+    Result = [
+        ['Sommeil', MessageSommeil],
+        ['Activités', MessageActivite],
+        ['Calories', MessageKcal],
+        ['Eau', MessageEau]
+    ].
 
 
 
