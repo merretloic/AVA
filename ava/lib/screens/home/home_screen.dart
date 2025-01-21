@@ -4,6 +4,7 @@ import 'package:ava/lifeStyleSummary.dart';
 import 'package:ava/configurationManager.dart';
 import 'package:ava/screens/quiz_page.dart';
 import 'package:ava/carousel.dart';
+import 'package:ava/form_page.dart';
 import 'package:ava/services/websocket_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -53,22 +54,19 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  void _navigateToFormPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FormPage()),
+    );
+  }
+
   Future<void> _sendDataToFirebase(Map<String, dynamic> data) async {
     try {
       await FirebaseFirestore.instance.collection('tasks').add(data);
       debugPrint('Données envoyées à Firebase : $data');
     } catch (e) {
       debugPrint('Erreur lors de l\'envoi à Firebase : $e');
-    }
-  }
-
-  // Fonction pour envoyer un exemple de données via WebSocket
-  void _sendWebSocketMessage(double hours) {
-    try {
-      _webSocketService.sendSleepData(hours);
-      debugPrint('Message envoyé au WebSocket : $hours heures de sommeil');
-    } catch (e) {
-      debugPrint('Erreur lors de l\'envoi du message au WebSocket : $e');
     }
   }
 
@@ -227,9 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _sendWebSocketMessage(8.0); // Exemple d'envoi de données
-        },
+        onPressed: _navigateToFormPage,
         tooltip: 'Envoyer des données au WebSocket',
         child: const Icon(Icons.send),
       ),
