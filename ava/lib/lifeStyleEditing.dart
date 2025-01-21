@@ -13,11 +13,13 @@ class LifeStyleEditingMenu extends StatefulWidget {
 class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
   late ConfigurationManager configManager;
   late List<List<Task>> _allLifeStyles;
+  late List<Task> _activeLifeStyle;
   @override
   void initState() {
     super.initState();
     configManager = widget.configManager;
     _allLifeStyles = configManager.allLifeStyles.value;
+    _activeLifeStyle = configManager.currentLifeStyle.value;
   }
 
   List<Task> _lifeStyle = List<Task>.generate(
@@ -27,6 +29,10 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
     setState(() {
       _lifeStyle[id] = task;
     });
+  }
+
+  void _noopCallback(int id, dynamic task) {
+    // Fonction vide par défaut
   }
 
   void _confirmLifeStyle() {
@@ -45,6 +51,8 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
   void _confirmLifeStyleEditing(int index) {
     setState(() {
       _allLifeStyles[index] = (List<Task>.from(_lifeStyle));
+      configManager.updateLifeStyle(_allLifeStyles[index]);
+      _activeLifeStyle = _allLifeStyles[index];
       _lifeStyle = List<Task>.generate(
           24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
     });
@@ -61,7 +69,126 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
           SleepTask(name: "sommeil", durationInHours: 1),
           i,
           _lifeStyle,
-          _updateLifeStyle));
+          i,
+          _updateLifeStyle,
+          _noopCallback));
+    }
+    return Stack(children: render);
+  }
+
+  Widget _activeLifeStyleRender(int padX, int padY) {
+    void _showSlotDetails(int slot, Task task) {
+      int consecutiveSlots = 1;
+      for (int i = slot + 1;
+          i < 24 && _activeLifeStyle[i].name == task.name;
+          i++) {
+        consecutiveSlots++;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent closing by clicking outside
+        builder: (BuildContext context) {
+          double newDuration = consecutiveSlots.toDouble();
+          return AlertDialog(
+            title: const Text("Détails du Slot"),
+            content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Type de tâche: ${task.name}"),
+                    Slider(
+                      value: newDuration,
+                      min: 1,
+                      max: 24 - slot.toDouble(),
+                      divisions: (24 - slot),
+                      label: newDuration.round().toString(),
+                      onChanged: (double value) {
+                        setState(() {
+                          newDuration = value;
+                        });
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Fermer"),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    for (int i = slot; i < slot + newDuration; i++) {
+                      _activeLifeStyle[i] =
+                          task.copyWith(durationInHours: newDuration.toInt());
+                    }
+                    for (int i = slot + newDuration.toInt();
+                        i < slot + consecutiveSlots;
+                        i++) {
+                      _activeLifeStyle[i] = EmptyTask();
+                    }
+                    configManager.updateLifeStyle(_activeLifeStyle);
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Confirmer"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    if (_activeLifeStyle.isEmpty) {
+      return const Text('No active lifestyle');
+    }
+    List<Widget> render = <Widget>[];
+    render.add(const Text(
+      'Style de vie actif :',
+      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    ));
+
+    // Add numbers 0 to 11 at the top
+    for (int i = 1; i < 13; i++) {
+      render.add(Positioned(
+        top: padY.toDouble(),
+        left: i * 58.0 + 62.0,
+        child: Text(
+          '$i',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ));
+    }
+
+    // Add AM and PM labels
+    render.add(Positioned(
+      top: padY.toDouble() + 40,
+      left: 60.0,
+      child: const Text(
+        'AM',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    ));
+    render.add(Positioned(
+      top: padY.toDouble() + 98.0,
+      left: 60.0,
+      child: const Text(
+        'PM',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    ));
+
+    for (int i = 0; i < 24; i++) {
+      double dx = (i % 12) * 58.0 + padX;
+      double dy = (i ~/ 12) * 58.0 + padY + 20.0;
+      render.add(LifestyleSlot(Offset(dx + 2, dy + 2), _activeLifeStyle[i], i,
+          _activeLifeStyle, i, (id, task) {}, _showSlotDetails));
     }
     return Stack(children: render);
   }
@@ -71,9 +198,10 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
       return Container(); // Return an empty container if there are no lifestyles
     }
     List<Widget> render = <Widget>[];
+
     for (int j = 0; j < _allLifeStyles.length; j++) {
       render.add(Positioned(
-        top: j * 140.0, // Adjusted top position to add padding
+        top: j * 170.0, // Adjusted top position to add padding
         left: 0,
         child: Text(
           'Mode de vie ${j + 1}',
@@ -81,12 +209,48 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
         ),
       ));
 
+      // Add numbers 0 to 11 at the top
+      for (int i = 1; i < 13; i++) {
+        render.add(Positioned(
+          top: j * 170.0 + 20.0,
+          left: i * 58.0,
+          child: Text(
+            '$i',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ));
+      }
+
+      // Add AM and PM labels
+      render.add(Positioned(
+        top: j * 170.0 + 60,
+        left: 0,
+        child: const Text(
+          'AM',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ));
+      render.add(Positioned(
+        top: j * 170.0 + 118.0,
+        left: 0,
+        child: const Text(
+          'PM',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ));
+
       //Boutons d'édition et de suppression
       render.add(Positioned(
-        top: j * 140.0 + 20.0, // Adjusted top position to add padding
+        top: j * 170.0, // Adjusted top position to add padding
         right: 0,
         child: Row(
           children: [
+            IconButton(
+              icon: const Icon(Icons.check),
+              onPressed: () {
+                _activateLifeStyle(j);
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
@@ -106,22 +270,21 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
       ));
 
       for (int i = 0; i < 24; i++) {
-        double dx = (i % 12) * 58.0;
+        double dx = (i % 12) * 58.0 + 30;
         double dy = (i ~/ 12) * 58.0 +
-            (j * 140.0) +
-            20.0; // Adjust dy for each lifestyle and add padding
-        render.add(LifestyleSlot(
-            Offset(dx + 2, dy + 2), _allLifeStyles[j][i], i, _allLifeStyles[j],
-            (id, task) {
+            (j * 170.0) +
+            40.0; // Adjust dy for each lifestyle and add padding
+        render.add(LifestyleSlot(Offset(dx + 2, dy + 2), _allLifeStyles[j][i],
+            i, _allLifeStyles[j], i, (id, task) {
           setState(() {
             _allLifeStyles[j][id] = task;
           });
-        }));
+        }, _noopCallback));
       }
     }
-    double containerHeight = (_allLifeStyles.length * 140.0) +
-        20.0; // Calculate container height + 20 pixels for margin
-    return SizedBox(
+    double containerHeight = (_allLifeStyles.length * 170.0) +
+        40.0; // Calculate container height + 40 pixels for margin
+    return Container(
       width: double.infinity,
       height: containerHeight,
       child: Stack(children: render),
@@ -163,12 +326,21 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 DragTask(initPos: const Offset(0.0, 240.0), taskID: 1),
                 DragTask(initPos: const Offset(120.0, 240.0), taskID: 2),
                 DragTask(initPos: const Offset(240.0, 240.0), taskID: 3),
+                DragTask(initPos: const Offset(360.0, 240.0), taskID: 4),
+                DragTask(initPos: const Offset(480.0, 240.0), taskID: 5),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  void _activateLifeStyle(int index) {
+    setState(() {
+      configManager.updateLifeStyle(_allLifeStyles[index]);
+      _activeLifeStyle = _allLifeStyles[index];
+    });
   }
 
   void _submitFeedbackEditing(int index) {
@@ -206,6 +378,8 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 DragTask(initPos: const Offset(0.0, 240.0), taskID: 1),
                 DragTask(initPos: const Offset(120.0, 240.0), taskID: 2),
                 DragTask(initPos: const Offset(240.0, 240.0), taskID: 3),
+                DragTask(initPos: const Offset(360.0, 240.0), taskID: 4),
+                DragTask(initPos: const Offset(480.0, 240.0), taskID: 5),
               ],
             ),
           ),
@@ -235,8 +409,8 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.45,
                   child: const Text(
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.',
-                    style: TextStyle(fontSize: 16),
+                    'Edition de style de vie :',
+                    style: TextStyle(fontSize: 32),
                     overflow: TextOverflow.clip,
                   ),
                 ),
@@ -254,10 +428,11 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
             const SizedBox(height: 16),
             Container(
               width: MediaQuery.of(context).size.width * 0.6,
-              height: MediaQuery.of(context).size.height * 0.2,
+              height: MediaQuery.of(context).size.height * 0.3,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
               ),
+              child: _activeLifeStyleRender(100, 50),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -277,7 +452,7 @@ class DragTask extends StatefulWidget {
   final int taskID;
   final Task task;
 
-  DragTask({super.key, required this.initPos, required this.taskID})
+  DragTask({required this.initPos, required this.taskID})
       : task = selectTask(taskID);
 
   static Task selectTask(int taskID) {
@@ -289,6 +464,10 @@ class DragTask extends StatefulWidget {
             name: "repas", durationInHours: 1, foodType: ["pasta", "salad"]);
       case 3:
         return RunTask(name: "course", durationInHours: 1, targetDistance: 1.0);
+      case 4:
+        return StudyTask(name: "étudier", durationInHours: 1);
+      case 5:
+        return FreeTimeTask(name: "temps libre", durationInHours: 1);
       default:
         return SleepTask(name: "sommeil", durationInHours: 1);
     }
@@ -373,12 +552,14 @@ class DragTaskState extends State<DragTask> {
 class LifestyleSlot extends StatefulWidget {
   final List<Task> lifeStyle;
   final int id;
+  final int slot;
   final Offset initPos;
   final Task task;
-  final Function(int, Task) onUpdate; // Ajoutez cette ligne
+  final Function(int, Task) onUpdate;
+  final Function(int, Task) onTap; // Nouveau callback pour gérer le clic
 
   const LifestyleSlot(this.initPos, this.task, this.id, this.lifeStyle,
-      this.onUpdate, {super.key}); // Modifiez cette ligne
+      this.slot, this.onUpdate, this.onTap);
 
   @override
   _LifestyleSlotState createState() => _LifestyleSlotState();
@@ -390,39 +571,45 @@ class _LifestyleSlotState extends State<LifestyleSlot> {
     return Positioned(
       left: widget.initPos.dx,
       top: widget.initPos.dy,
-      child: DragTarget<int>(
-        onAcceptWithDetails: (taskID) {
-          setState(() {
-            widget.onUpdate(widget.id, DragTask.selectTask(taskID.data));
-          });
+      child: GestureDetector(
+        onTap: () {
+          widget.onTap(widget.id,
+              widget.lifeStyle[widget.id]); // Appel du callback au clic
         },
-        builder: (BuildContext context, List<int?> accepted,
-            List<dynamic> rejected) {
-          Task currentTask = widget.lifeStyle[widget.id];
-          return Container(
-            width: 58.0,
-            height: 58.0,
-            color: currentTask.color,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      currentTask.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
+        child: DragTarget<int>(
+          onAcceptWithDetails: (taskID) {
+            setState(() {
+              widget.onUpdate(widget.id, DragTask.selectTask(taskID.data));
+            });
+          },
+          builder: (BuildContext context, List<int?> accepted,
+              List<dynamic> rejected) {
+            Task currentTask = widget.lifeStyle[widget.id];
+            return Container(
+              width: 58.0,
+              height: 58.0,
+              color: currentTask.color,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        currentTask.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
                     ),
-                  ),
-                  currentTask.icon,
-                ],
+                    currentTask.icon,
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

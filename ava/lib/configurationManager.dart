@@ -3,9 +3,9 @@ import './tasks.dart';
 
 class ConfigurationManager {
   final ValueNotifier<String> _styleNotifier = ValueNotifier<String>("Day");
-  final ValueNotifier<List<Task>> _currentLifeStyle = ValueNotifier<List<Task>>(
+  ValueNotifier<List<Task>> _currentLifeStyle = ValueNotifier<List<Task>>(
       List<Task>.generate(24, (index) => EmptyTask()));
-  final ValueNotifier<List<List<Task>>> _allLifeStyles =
+  ValueNotifier<List<List<Task>>> _allLifeStyles =
       ValueNotifier<List<List<Task>>>(
           [List<Task>.generate(24, (index) => EmptyTask())]);
   final ValueNotifier<bool> _isFormFilled = ValueNotifier<bool>(false);

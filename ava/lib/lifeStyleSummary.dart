@@ -97,9 +97,9 @@ class _LifeStyleState extends State<LifeStyleSummaryMenu> {
                 color: Colors.blue[100],
                 border: Border.all(color: Colors.black),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text(
                     'Sommeil',
                     style: TextStyle(fontSize: 24),
@@ -120,9 +120,9 @@ class _LifeStyleState extends State<LifeStyleSummaryMenu> {
                 color: Colors.yellow[100],
                 border: Border.all(color: Colors.black),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text(
                     'Alimentation',
                     style: TextStyle(fontSize: 24),
@@ -143,9 +143,9 @@ class _LifeStyleState extends State<LifeStyleSummaryMenu> {
                 color: Colors.red[100],
                 border: Border.all(color: Colors.black),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text(
                     'Exercice',
                     style: TextStyle(fontSize: 24),

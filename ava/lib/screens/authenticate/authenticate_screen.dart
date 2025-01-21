@@ -3,9 +3,8 @@ import 'package:ava/common/constants.dart';
 import 'package:ava/common/loading.dart';
 import 'package:ava/services/authentication.dart';
 
-class AuthenticateScreen extends StatefulWidget {
-  const AuthenticateScreen({super.key});
 
+class AuthenticateScreen extends StatefulWidget {
   @override
   _AuthenticateScreenState createState() => _AuthenticateScreenState();
 }
@@ -95,13 +94,13 @@ Future<void> _handleSignIn(String email, String password) async {
             ),
             actions: <Widget>[
               TextButton.icon(
-                icon: const Icon(
+                icon: Icon(
                   Icons.person,
                   color: Colors.white,
                 ),
                 label: Text(
                   showSignIn ? 'Sign In' : "Register",
-                  style: const TextStyle(color: Color.fromARGB(255, 166, 228, 115), fontWeight: FontWeight.bold),
+                  style: TextStyle(color: const Color.fromARGB(255, 166, 228, 115), fontWeight: FontWeight.bold),
                 ),
                 onPressed: () => toggleView(),
               ),
@@ -109,7 +108,7 @@ Future<void> _handleSignIn(String email, String password) async {
           ),
 
             body: Container(
-              padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+              padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -140,7 +139,7 @@ Future<void> _handleSignIn(String email, String password) async {
                     ElevatedButton(
                       child: Text(
                         showSignIn ? "Sign In" : "Register",
-                        style: const TextStyle(color: Colors.blue),
+                        style: TextStyle(color: Colors.blue),
                       ),
                       onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
@@ -158,7 +157,7 @@ Future<void> _handleSignIn(String email, String password) async {
                     const SizedBox(height: 10.0),
                     Text(
                       error,
-                      style: const TextStyle(color: Colors.red, fontSize: 15.0),
+                      style: TextStyle(color: Colors.red, fontSize: 15.0),
                     ),
                   ],
                 ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ava/optionsMenu.dart';
 import 'package:ava/lifeStyleSummary.dart';
-import 'package:ava/tasks.dart';
 import 'package:ava/configurationManager.dart';
 import 'package:ava/screens/quiz_page.dart';
+import 'package:ava/carousel.dart';
 import 'package:ava/services/websocket_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.config});
@@ -18,33 +19,34 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late final ConfigurationManager configManager;
   late WebSocketService _webSocketService;
-  String get style => configManager.style;
-
-  String _webSocketResponse = '';
-  bool _isLoading = false;
+  late int currentIndex;
 
   @override
   void initState() {
     super.initState();
     configManager = widget.config;
+    currentIndex = DateTime.now().hour;
 
     // Initialise WebSocket service
     _webSocketService = WebSocketService(
       onMessage: (data) {
         setState(() {
-          _webSocketResponse = data;
-          _isLoading = false;
+          // Traitez la réponse WebSocket ici si nécessaire
         });
       },
       onError: (error) {
         setState(() {
-          _webSocketResponse = 'Erreur : $error';
-          _isLoading = false;
+          // Gérez les erreurs WebSocket ici si nécessaire
         });
       },
     );
 
-    debugPrint(configManager.style); // Ajout de l'instruction debugPrint
+    // Listener pour mettre à jour l'index en fonction de l'heure
+    configManager.currentLifeStyle.addListener(() {
+      setState(() {
+        currentIndex = DateTime.now().hour;
+      });
+    });
   }
 
   @override
@@ -53,12 +55,25 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _sendSleepHours(double hours) {
+  Future<void> _sendDataToFirebase(Map<String, dynamic> data) async {
+    try {
+      await FirebaseFirestore.instance.collection('tasks').add(data);
+      debugPrint('Données envoyées à Firebase : $data');
+    } catch (e) {
+      debugPrint('Erreur lors de l\'envoi à Firebase : $e');
+    }
+  }
+
+  void _navigateToPreviousTask() {
     setState(() {
-      _isLoading = true;
-      _webSocketResponse = '';
+      currentIndex = (currentIndex - 1 + 24) % 24;
     });
-    _webSocketService.sendSleepData(hours);
+  }
+
+  void _navigateToNextTask() {
+    setState(() {
+      currentIndex = (currentIndex + 1) % 24;
+    });
   }
 
   void _optionMenu() {
@@ -93,106 +108,76 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Row(
-                children: [
-                  const SizedBox(width: 30),
-                  Column(
-                    children: [
-                      FloatingActionButton(
-                        heroTag: 'settings',
-                        onPressed: () {
-                          _optionMenu();
-                        },
-                        tooltip: 'Settings',
-                        child: const Icon(Icons.settings),
-                      ),
-                      const SizedBox(height: 10),
-                      FloatingActionButton(
-                        heroTag: 'lifestyle',
-                        onPressed: () {
-                          _lifeStyleSummaryMenu();
-                        },
-                        tooltip: 'Favorite',
-                        child: const Icon(Icons.favorite),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 200),
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 2,
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
-                      ),
-                      child: const SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tâche : Repas',
-                              style: TextStyle(fontSize: 32),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Aliments :\n- Dinde (200 gr)\n- Féculents (100 gr)\n- Légumes verts (200 gr)',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 100),
-                ],
+        backgroundColor: Colors.black,
+        toolbarHeight: 80,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: 50,
+              width: 50,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              "AVA",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                ValueListenableBuilder<String>(
-                  valueListenable: configManager.styleNotifier,
-                  builder: (context, value, child) {
-                    return Text('Il fait : $value');
-                  },
-                ),
-                ValueListenableBuilder<List<Task>>(
-                  valueListenable: configManager.currentLifeStyle,
-                  builder: (context, value, child) {
-                    return Text(
-                        'Tâche actuelle : ${value[DateTime.now().hour].name}');
-                  },
-                ),
-                const SizedBox(height: 20),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: () {
-                          _sendSleepHours(8); // Exemple : envoi de 8 heures
-                        },
-                        child: const Text('Envoyer heures de sommeil'),
-                      ),
-                const SizedBox(height: 20),
-                if (_webSocketResponse.isNotEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text('Réponse WebSocket : $_webSocketResponse'),
-                    ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(width: 30),
+              Column(
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'settings',
+                    backgroundColor: Colors.black,
+                    onPressed: _optionMenu,
+                    tooltip: 'Settings',
+                    child: const Icon(Icons.settings, color: Colors.white),
                   ),
-              ],
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
+                    heroTag: 'lifestyle',
+                    backgroundColor: Colors.black,
+                    onPressed: _lifeStyleSummaryMenu,
+                    tooltip: 'Lifestyle Summary',
+                    child: const Icon(Icons.favorite, color: Colors.white),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Expanded(
+            child: Center(
+              child: Carousel(
+                configManager: configManager,
+                currentIndex: currentIndex,
+                onPrevious: () {
+                  _navigateToPreviousTask();
+                  _sendDataToFirebase({
+                    'type': 'task_navigation',
+                    'direction': 'previous',
+                    'timestamp': DateTime.now(),
+                  });
+                },
+                onNext: () {
+                  _navigateToNextTask();
+                  _sendDataToFirebase({
+                    'type': 'task_navigation',
+                    'direction': 'next',
+                    'timestamp': DateTime.now(),
+                  });
+                },
+              ),
             ),
           ),
         ],
