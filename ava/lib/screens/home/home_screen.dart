@@ -27,17 +27,15 @@ class _MyHomePageState extends State<MyHomePage> {
     configManager = widget.config;
     currentIndex = DateTime.now().hour;
 
-    // Initialise WebSocket service
+    // Initialisation du service WebSocket
     _webSocketService = WebSocketService(
       onMessage: (data) {
-        setState(() {
-          // Traitez la réponse WebSocket ici si nécessaire
-        });
+        debugPrint('Message WebSocket reçu : $data');
+        // Ajoutez ici le traitement du message reçu si nécessaire
       },
       onError: (error) {
-        setState(() {
-          // Gérez les erreurs WebSocket ici si nécessaire
-        });
+        debugPrint('Erreur WebSocket : $error');
+        // Ajoutez ici la gestion des erreurs si nécessaire
       },
     );
 
@@ -51,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _webSocketService.dispose();
+    _webSocketService.dispose(); // Libère les ressources WebSocket
     super.dispose();
   }
 
@@ -61,6 +59,16 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Données envoyées à Firebase : $data');
     } catch (e) {
       debugPrint('Erreur lors de l\'envoi à Firebase : $e');
+    }
+  }
+
+  // Fonction pour envoyer un exemple de données via WebSocket
+  void _sendWebSocketMessage(double hours) {
+    try {
+      _webSocketService.sendSleepData(hours);
+      debugPrint('Message envoyé au WebSocket : $hours heures de sommeil');
+    } catch (e) {
+      debugPrint('Erreur lors de l\'envoi du message au WebSocket : $e');
     }
   }
 
@@ -217,6 +225,13 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _sendWebSocketMessage(8.0); // Exemple d'envoi de données
+        },
+        tooltip: 'Envoyer des données au WebSocket',
+        child: const Icon(Icons.send),
       ),
     );
   }

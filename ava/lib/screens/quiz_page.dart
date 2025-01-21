@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ava/configurationManager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class QuizPage extends StatefulWidget {
   final ConfigurationManager configManager;
@@ -32,6 +34,49 @@ class _QuizPageState extends State<QuizPage> {
       "options": ["0", "8"]
     },
   ];
+
+Future<void> _sendAnswersToFirestore() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    Map<String, dynamic> answers = {};
+    answers['questions'] = [];
+
+    for (var i = 0; i < quizQuestions.length; i++) {
+      final question = quizQuestions[i];
+
+      if (question["type"] == "single-choice") {
+        answers['questions'].add({
+          "question": question["question"],
+          "type": question["type"],
+          "answer": _selectedAnswer,
+        });
+      } else if (question["type"] == "multiple-choice") {
+        answers['questions'].add({
+          "question": question["question"],
+          "type": question["type"],
+          "answer": multipleChoices,
+        });
+      } else if (question["type"] == "timeline") {
+        answers['questions'].add({
+          "question": question["question"],
+          "type": question["type"],
+          "answer": _selectedAnswer,
+        });
+      }
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .set({
+      'quizAnswers': answers,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    print("Réponses envoyées avec succès !");
+  } else {
+    print("Aucun utilisateur connecté.");
+  }
+}
 
   Widget _printQuestionAnswers(
       Map<String, dynamic> currentQuestion, List<String> options) {
@@ -144,6 +189,8 @@ class _QuizPageState extends State<QuizPage> {
         setState(() {
           widget.configManager.updateIsFormFilled();
         });
+        // Envoyer les réponses à Firestore avant de quitter
+        _sendAnswersToFirestore();
         Navigator.pop(context); // Revenir au menu principal
       }
     });
@@ -173,6 +220,7 @@ class _QuizPageState extends State<QuizPage> {
               const SizedBox(height: 20),
               _printQuestionAnswers(currentQuestion,
                   List<String>.from(currentQuestion["options"])),
+
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
