@@ -9,6 +9,7 @@ class ConfigurationManager {
       ValueNotifier<List<List<Task>>>(
           [List<Task>.generate(24, (index) => EmptyTask())]);
   final ValueNotifier<bool> _isFormFilled = ValueNotifier<bool>(false);
+  final ValueNotifier<String> _conseils = ValueNotifier<String>("");
 
   String get style => _styleNotifier.value;
 
@@ -55,4 +56,11 @@ class ConfigurationManager {
   ValueNotifier<List<Task>> get currentLifeStyle => _currentLifeStyle;
   ValueNotifier<List<List<Task>>> get allLifeStyles => _allLifeStyles;
   ValueNotifier<bool> get isFormFilledNotifier => _isFormFilled;
+  ValueNotifier<String> get conseilsNotifier => _conseils;
+
+  String get conseils => _conseils.value;
+
+  void setConseils(String newConseils) {
+    _conseils.value = newConseils;
+  }
 }

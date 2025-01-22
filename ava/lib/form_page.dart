@@ -1,7 +1,11 @@
+import 'package:ava/configurationManager.dart';
 import 'package:flutter/material.dart';
 import 'package:ava/services/websocket_service.dart';
 
 class FormPage extends StatefulWidget {
+  final ConfigurationManager configManager;
+  const FormPage({super.key, required this.configManager});
+
   @override
   _FormPageState createState() => _FormPageState();
 }
@@ -33,6 +37,7 @@ class _FormPageState extends State<FormPage> {
       onMessage: (data) {
         setState(() {
           _response = data;
+          widget.configManager.conseilsNotifier.value = data;
           _isLoading = false;
         });
       },
@@ -47,8 +52,18 @@ class _FormPageState extends State<FormPage> {
   }
 
   void _sendHealthData() {
-    if (_ageController.text.isEmpty || _sexeController.text.isEmpty || _poidsController.text.isEmpty || _sommeilController.text.isEmpty || _activiteController.text.isEmpty || _caloriesController.text.isEmpty || _eauController.text.isEmpty || _freqCardiaqueController.text.isEmpty || _vitamineDController.text.isEmpty || _tempsExpositionController.text.isEmpty || _surfaceExposeeController.text.isEmpty) return;
-    
+    if (_ageController.text.isEmpty ||
+        _sexeController.text.isEmpty ||
+        _poidsController.text.isEmpty ||
+        _sommeilController.text.isEmpty ||
+        _activiteController.text.isEmpty ||
+        _caloriesController.text.isEmpty ||
+        _eauController.text.isEmpty ||
+        _freqCardiaqueController.text.isEmpty ||
+        _vitamineDController.text.isEmpty ||
+        _tempsExpositionController.text.isEmpty ||
+        _surfaceExposeeController.text.isEmpty) return;
+
     setState(() {
       _isLoading = true;
       _response = '';
@@ -99,21 +114,21 @@ class _FormPageState extends State<FormPage> {
             children: [
               TextField(
                 controller: _ageController,
-                decoration: InputDecoration(labelText: 'Age'),
+                decoration: InputDecoration(labelText: 'Age (années)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: _sexeController,
-                decoration: InputDecoration(labelText: 'Sexe'),
+                decoration: InputDecoration(labelText: 'Sexe (M/F)'),
               ),
               TextField(
                 controller: _poidsController,
-                decoration: InputDecoration(labelText: 'Poids'),
+                decoration: InputDecoration(labelText: 'Poids (kg)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: _sommeilController,
-                decoration: InputDecoration(labelText: 'Sommeil (hours)'),
+                decoration: InputDecoration(labelText: 'Sommeil (heures)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
@@ -123,7 +138,8 @@ class _FormPageState extends State<FormPage> {
               ),
               TextField(
                 controller: _caloriesController,
-                decoration: InputDecoration(labelText: 'Calories'),
+                decoration: InputDecoration(
+                    labelText: 'Calories (kcal consommé par jour)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
@@ -133,7 +149,8 @@ class _FormPageState extends State<FormPage> {
               ),
               TextField(
                 controller: _freqCardiaqueController,
-                decoration: InputDecoration(labelText: 'Fréquence Cardiaque'),
+                decoration:
+                    InputDecoration(labelText: 'Fréquence Cardiaque (bpm)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
@@ -143,19 +160,19 @@ class _FormPageState extends State<FormPage> {
               ),
               TextField(
                 controller: _tempsExpositionController,
-                decoration: InputDecoration(labelText: 'Temps d\'Exposition (minutes)'),
+                decoration:
+                    InputDecoration(labelText: 'Temps d\'Exposition (minutes)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: _surfaceExposeeController,
-                decoration: InputDecoration(labelText: 'Surface Exposée'),
+                decoration: InputDecoration(
+                    labelText: 'Surface Exposée (Petite, Moyenne, Grande)'),
               ),
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _isLoading ? null : _sendHealthData,
-                child: _isLoading
-                    ? CircularProgressIndicator()
-                    : Text('Send'),
+                child: _isLoading ? CircularProgressIndicator() : Text('Send'),
               ),
               SizedBox(height: 24),
               if (_response.isNotEmpty)

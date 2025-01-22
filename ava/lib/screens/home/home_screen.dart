@@ -58,7 +58,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _navigateToFormPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => FormPage()),
+      MaterialPageRoute(
+          builder: (context) => FormPage(configManager: configManager)),
     );
   }
 
@@ -269,7 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToFormPage,
-        tooltip: 'Envoyer des données au WebSocket',
+        tooltip: 'Formulaire utilisateur.',
         child: const Icon(Icons.send),
       ),
     );

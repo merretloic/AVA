@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'configurationManager.dart';
+import 'dart:convert';
 import 'lifeStyleEditing.dart';
 
 class LifeStyleSummaryMenu extends StatefulWidget {
@@ -12,11 +13,17 @@ class LifeStyleSummaryMenu extends StatefulWidget {
 
 class _LifeStyleState extends State<LifeStyleSummaryMenu> {
   late ConfigurationManager configManager;
+  late List<dynamic> conseils;
 
   @override
   void initState() {
     super.initState();
     configManager = widget.configManager;
+    if (configManager.conseilsNotifier.value.isNotEmpty) {
+      conseils = jsonDecode(configManager.conseilsNotifier.value);
+    } else {
+      conseils = [];
+    }
   }
 
   void _lifeStyleEditingMenu() {
@@ -90,74 +97,56 @@ class _LifeStyleState extends State<LifeStyleSummaryMenu> {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.blue[100],
-                border: Border.all(color: Colors.black),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Sommeil',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Il est recommandé de dormir au moins 8 heures par jour, pensez à rajouter une heure de sommeil à votre style de vie.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.yellow[100],
-                border: Border.all(color: Colors.black),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Alimentation',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Essayez de manger plus de fruits et légumes pour une alimentation équilibrée.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: conseils.map((conseil) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          border: Border.all(color: Colors.black),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              conseil['state']
+                                  .replaceAll('Ã©', 'é')
+                                  .replaceFirst(conseil['state'][0],
+                                      conseil['state'][0].toUpperCase()),
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              conseil['recommendations'].replaceAll('Ã©', 'é'),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.red[100],
-                border: Border.all(color: Colors.black),
+            if (conseils.isEmpty)
+              Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.red[100],
+                  border: Border.all(color: Colors.black),
+                ),
+                child: const Text(
+                  "Aucune données, remplissez le formulaire d'utilisateur auparavant",
+                  style: TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Exercice',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Il est conseillé de faire au moins 30 minutes d\'exercice par jour.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
