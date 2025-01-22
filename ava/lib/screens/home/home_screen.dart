@@ -205,17 +205,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 border: Border.all(color: Colors.black),
               ),
               child: FractionallySizedBox(
-                widthFactor: 2 / 3,
+                widthFactor: 0.9, // Adjusted to fit within the screen
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.warning, color: Colors.black),
                     const SizedBox(width: 10),
-                    Text(
-                      isFormFilled
-                          ? 'Merci pour avoir remplis le formulaire !'
-                          : 'Attention, vous n\'avez pas encore remplis votre formulaire pour la journée !',
-                      style: const TextStyle(color: Colors.black),
+                    Expanded(
+                      child: Text(
+                        isFormFilled
+                            ? 'Merci pour avoir remplis le formulaire !'
+                            : 'Attention, vous n\'avez pas encore remplis votre formulaire pour la journée !',
+                        style: const TextStyle(color: Colors.black),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
