@@ -5,24 +5,34 @@ abstract class Task {
   int durationInHours;
   late Icon icon;
   late Color color;
+  String description;
+  late final String type;
 
   Task({
     required this.name,
     required this.durationInHours,
+    this.description = '',
+    required this.type,
   });
 
   Task copyWith(
-      {String? name, int? durationInHours, Color? color, Icon? icon}) {
+      {String? name,
+      int? durationInHours,
+      Color? color,
+      Icon? icon,
+      String? description}) {
     if (this is EmptyTask) {
       return EmptyTask()
         ..name = name ?? this.name
         ..durationInHours = durationInHours ?? this.durationInHours
         ..color = color ?? this.color
-        ..icon = icon ?? this.icon;
+        ..icon = icon ?? this.icon
+        ..description = description ?? this.description;
     } else if (this is SleepTask) {
       return SleepTask(
         name: name ?? this.name,
         durationInHours: durationInHours ?? this.durationInHours,
+        description: description ?? this.description,
       )
         ..color = color ?? this.color
         ..icon = icon ?? this.icon;
@@ -31,6 +41,7 @@ abstract class Task {
         name: name ?? this.name,
         durationInHours: durationInHours ?? this.durationInHours,
         foodType: (this as EatTask).foodType,
+        description: description ?? this.description,
       )
         ..color = color ?? this.color
         ..icon = icon ?? this.icon;
@@ -39,6 +50,23 @@ abstract class Task {
         name: name ?? this.name,
         durationInHours: durationInHours ?? this.durationInHours,
         targetDistance: (this as RunTask).targetDistance,
+        description: description ?? this.description,
+      )
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else if (this is StudyTask) {
+      return StudyTask(
+        name: name ?? this.name,
+        durationInHours: durationInHours ?? this.durationInHours,
+        description: description ?? this.description,
+      )
+        ..color = color ?? this.color
+        ..icon = icon ?? this.icon;
+    } else if (this is FreeTimeTask) {
+      return FreeTimeTask(
+        name: name ?? this.name,
+        durationInHours: durationInHours ?? this.durationInHours,
+        description: description ?? this.description,
       )
         ..color = color ?? this.color
         ..icon = icon ?? this.icon;
@@ -49,22 +77,21 @@ abstract class Task {
 
   // Common method for all task types
   void displayDetails() {
-    debugPrint('Task: $name, Duration: $durationInHours hours');
+    debugPrint(
+        'Task: $name, Duration: $durationInHours hours, Description: $description');
   }
 }
 
 class EmptyTask extends Task {
-  static const type = 'Empty';
   @override
   final Icon icon = const Icon(Icons.do_not_disturb);
   @override
   final Color color = Colors.grey;
 
-  EmptyTask() : super(name: 'Empty Task', durationInHours: 1);
+  EmptyTask() : super(name: 'Empty Task', durationInHours: 1, type: 'Empty');
 }
 
 class SleepTask extends Task {
-  static const type = 'Sleep';
   @override
   final Icon icon = const Icon(Icons.bedtime);
   @override
@@ -73,7 +100,12 @@ class SleepTask extends Task {
   SleepTask({
     required String name,
     required int durationInHours,
-  }) : super(name: name, durationInHours: durationInHours);
+    String description = '',
+  }) : super(
+            name: name,
+            durationInHours: durationInHours,
+            description: description,
+            type: 'Dormir');
 
   @override
   void displayDetails() {
@@ -83,7 +115,6 @@ class SleepTask extends Task {
 }
 
 class EatTask extends Task {
-  static const type = 'Eat';
   final List<String> foodType;
   @override
   final Icon icon = const Icon(Icons.food_bank);
@@ -94,7 +125,12 @@ class EatTask extends Task {
     required String name,
     required int durationInHours,
     required this.foodType,
-  }) : super(name: name, durationInHours: durationInHours);
+    String description = '',
+  }) : super(
+            name: name,
+            durationInHours: durationInHours,
+            description: description,
+            type: 'Repas');
 
   @override
   void displayDetails() {
@@ -104,7 +140,6 @@ class EatTask extends Task {
 }
 
 class RunTask extends Task {
-  static const type = 'Run';
   final double targetDistance;
   @override
   final Icon icon = const Icon(Icons.directions_run);
@@ -115,7 +150,8 @@ class RunTask extends Task {
     required super.name,
     required super.durationInHours,
     required this.targetDistance,
-  });
+    String description = '',
+  }) : super(description: description, type: 'Exercice physique');
 
   @override
   void displayDetails() {
@@ -125,7 +161,6 @@ class RunTask extends Task {
 }
 
 class StudyTask extends Task {
-  static const type = 'Study';
   @override
   final Icon icon = const Icon(Icons.book);
   @override
@@ -134,7 +169,12 @@ class StudyTask extends Task {
   StudyTask({
     required String name,
     required int durationInHours,
-  }) : super(name: name, durationInHours: durationInHours);
+    String description = '',
+  }) : super(
+            name: name,
+            durationInHours: durationInHours,
+            description: description,
+            type: 'Etudier');
 
   @override
   void displayDetails() {
@@ -144,7 +184,6 @@ class StudyTask extends Task {
 }
 
 class FreeTimeTask extends Task {
-  static const type = 'FreeTime';
   @override
   final Icon icon = const Icon(Icons.free_breakfast);
   @override
@@ -153,7 +192,12 @@ class FreeTimeTask extends Task {
   FreeTimeTask({
     required String name,
     required int durationInHours,
-  }) : super(name: name, durationInHours: durationInHours);
+    String description = '',
+  }) : super(
+            name: name,
+            durationInHours: durationInHours,
+            description: description,
+            type: 'Temps libre');
 
   @override
   void displayDetails() {

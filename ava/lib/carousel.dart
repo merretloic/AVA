@@ -29,199 +29,212 @@ class Carousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Transform.translate(
-      offset: const Offset(0, -50),
-      child: SizedBox(
-        height: 500,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // Activité précédente
-            Positioned(
-              left: -100,
-              child: SizedBox(
-                height: 150,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: configManager
-                              .currentLifeStyle
-                              .value[(currentIndex - 1 + 24) %
-                                  configManager.currentLifeStyle.value.length]
-                              .color
-                              .withOpacity(0.5),
-                        ),
-                        padding: const EdgeInsets.all(80),
-                        child: Icon(
-                          configManager
-                              .currentLifeStyle
-                              .value[(currentIndex - 1 + 24) %
-                                  configManager.currentLifeStyle.value.length]
-                              .icon
-                              .icon,
-                          size: 70,
-                          color: configManager
-                              .currentLifeStyle
-                              .value[(currentIndex - 1 + 24) %
-                                  configManager.currentLifeStyle.value.length]
-                              .icon
-                              .color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Flèche précédente
-            Positioned(
-              left: 20,
-              top: 400,
-              child: IconButton(
-                icon:
-                    const Icon(Icons.arrow_back, size: 48, color: Colors.black),
-                onPressed: () => onPrevious(),
-              ),
-            ),
-            // Activité principale
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Envelopper le Stack avec un widget SizedBox ou autre
-                SizedBox(
-                  height: 300,
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: configManager
-                              .currentLifeStyle
-                              .value[currentIndex %
-                                  configManager.currentLifeStyle.value.length]
-                              .color
-                              .withOpacity(0.8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: configManager
-                                  .currentLifeStyle
-                                  .value[currentIndex %
-                                      configManager
-                                          .currentLifeStyle.value.length]
-                                  .color
-                                  .withOpacity(0.6),
-                              blurRadius: 20,
-                              spreadRadius: 5,
+        offset: const Offset(0, -50),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final height = constraints.maxHeight;
+            return SizedBox(
+              height: height,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  // Activité précédente
+                  Positioned(
+                    left: -100,
+                    child: SizedBox(
+                      height: height * 0.27,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex - 1 + 24) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .color
+                                    .withOpacity(0.5),
+                              ),
+                              padding: EdgeInsets.all(height * 0.16),
+                              child: Icon(
+                                configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex - 1 + 24) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .icon,
+                                size: height * 0.14,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex - 1 + 24) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .color,
+                              ),
                             ),
                           ],
                         ),
-                        padding: const EdgeInsets.all(150),
-                        child: Icon(
-                          configManager
-                              .currentLifeStyle
-                              .value[currentIndex %
-                                  configManager.currentLifeStyle.value.length]
-                              .icon
-                              .icon,
-                          size: 90,
-                          color: configManager
-                              .currentLifeStyle
-                              .value[currentIndex %
-                                  configManager.currentLifeStyle.value.length]
-                              .icon
-                              .color,
-                        ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  _getActivityTimeRange(currentIndex),
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: configManager
-                        .currentLifeStyle
-                        .value[currentIndex %
-                            configManager.currentLifeStyle.value.length]
-                        .color,
+                  // Flèche précédente
+                  Positioned(
+                    left: 20,
+                    top: height * 0.8,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back,
+                          size: 48, color: Colors.black),
+                      onPressed: () => onPrevious(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  capitalize(
-                    configManager
-                        .currentLifeStyle
-                        .value[currentIndex %
-                            configManager.currentLifeStyle.value.length]
-                        .name,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 25,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-            // Activité suivante
-            Positioned(
-              right: -100,
-              child: SizedBox(
-                height: 150,
-                child: SingleChildScrollView(
-                  child: Column(
+                  // Activité principale
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                      // Envelopper le Stack avec un widget SizedBox ou autre
+                      SizedBox(
+                        height: height * 0.6,
+                        child: Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[currentIndex %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .color
+                                    .withOpacity(0.8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: configManager
+                                        .currentLifeStyle
+                                        .value[currentIndex %
+                                            configManager
+                                                .currentLifeStyle.value.length]
+                                        .color
+                                        .withOpacity(0.6),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              padding: EdgeInsets.all(height * 0.3),
+                              child: Icon(
+                                configManager
+                                    .currentLifeStyle
+                                    .value[currentIndex %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .icon,
+                                size: height * 0.18,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[currentIndex %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        _getActivityTimeRange(currentIndex),
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
                           color: configManager
                               .currentLifeStyle
-                              .value[(currentIndex + 1) %
+                              .value[currentIndex %
                                   configManager.currentLifeStyle.value.length]
-                              .color
-                              .withOpacity(0.5),
+                              .color,
                         ),
-                        padding: const EdgeInsets.all(80),
-                        child: Icon(
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        capitalize(
                           configManager
                               .currentLifeStyle
-                              .value[(currentIndex + 1) %
+                              .value[currentIndex %
                                   configManager.currentLifeStyle.value.length]
-                              .icon
-                              .icon,
-                          size: 70,
-                          color: configManager
-                              .currentLifeStyle
-                              .value[(currentIndex + 1) %
-                                  configManager.currentLifeStyle.value.length]
-                              .icon
-                              .color,
+                              .name,
+                        ),
+                        style: const TextStyle(
+                          fontSize: 25,
+                          color: Colors.black87,
                         ),
                       ),
                     ],
                   ),
-                ),
+                  // Activité suivante
+                  Positioned(
+                    right: -100,
+                    child: SizedBox(
+                      height: height * 0.27,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex + 1) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .color
+                                    .withOpacity(0.5),
+                              ),
+                              padding: EdgeInsets.all(height * 0.16),
+                              child: Icon(
+                                configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex + 1) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .icon,
+                                size: height * 0.14,
+                                color: configManager
+                                    .currentLifeStyle
+                                    .value[(currentIndex + 1) %
+                                        configManager
+                                            .currentLifeStyle.value.length]
+                                    .icon
+                                    .color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Flèche suivante
+                  Positioned(
+                    right: 20,
+                    top: height * 0.8,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_forward,
+                          size: 48, color: Colors.black),
+                      onPressed: () => onNext(),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            // Flèche suivante
-            Positioned(
-              right: 20,
-              top: 400,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_forward,
-                    size: 48, color: Colors.black),
-                onPressed: () => onNext(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+            );
+          },
+        ));
   }
 }

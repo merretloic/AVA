@@ -50,3 +50,10 @@ ava/macos/Flutter/GeneratedPluginRegistrant.swift
 ava/windows/flutter/generated_plugin_registrant.cc
 ava/windows/flutter/generated_plugin_registrant.h
 ava/windows/flutter/generated_plugins.cmake
+ava/web/flutter/generated_plugin_registrant.cc
+ava/web/flutter/generated_plugin_registrant.h
+ava/web/flutter/generated_plugins.cmake
+ava/web/flutter/flutter_service_worker.js
+ava/web/flutter/flutter_service_worker.js.map
+ava/web/flutter/flutter_service_worker.dart.js
+

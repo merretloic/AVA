@@ -90,6 +90,7 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
         barrierDismissible: false, // Prevent closing by clicking outside
         builder: (BuildContext context) {
           double newDuration = consecutiveSlots.toDouble();
+          String newDescription = task.description;
           return AlertDialog(
             title: const Text("Détails du Slot"),
             content: StatefulBuilder(
@@ -97,7 +98,6 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Type de tâche: ${task.name}"),
                     Slider(
                       value: newDuration,
                       min: 1,
@@ -109,6 +109,15 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                           newDuration = value;
                         });
                       },
+                    ),
+                    TextField(
+                      controller: TextEditingController(text: newDescription),
+                      onChanged: (value) {
+                        newDescription = value;
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
                     ),
                   ],
                 );
@@ -125,8 +134,10 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 onPressed: () {
                   setState(() {
                     for (int i = slot; i < slot + newDuration; i++) {
-                      _activeLifeStyle[i] =
-                          task.copyWith(durationInHours: newDuration.toInt());
+                      _activeLifeStyle[i] = task.copyWith(
+                        durationInHours: newDuration.toInt(),
+                        description: newDescription,
+                      );
                     }
                     for (int i = slot + newDuration.toInt();
                         i < slot + consecutiveSlots;

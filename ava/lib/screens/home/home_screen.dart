@@ -1,3 +1,4 @@
+import 'package:ava/tasks.dart';
 import 'package:flutter/material.dart';
 import 'package:ava/optionsMenu.dart';
 import 'package:ava/lifeStyleSummary.dart';
@@ -159,6 +160,45 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: const Icon(Icons.favorite, color: Colors.white),
                   ),
                 ],
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    child: SingleChildScrollView(
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                        ),
+                        child: ValueListenableBuilder<List<Task>>(
+                          valueListenable: configManager.currentLifeStyle,
+                          builder: (context, lifeStyles, child) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tâche : ${lifeStyles[currentIndex].type}',
+                                  style: TextStyle(fontSize: 32),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  lifeStyles[currentIndex]
+                                          .description
+                                          .isNotEmpty
+                                      ? lifeStyles[currentIndex].description
+                                      : "Cette tâche n'a pas de description.",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
