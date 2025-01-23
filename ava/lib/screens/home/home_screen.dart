@@ -1,18 +1,18 @@
-import 'package:ava/tasks.dart';
+import 'package:ava/common/tasks.dart';
 import 'package:flutter/material.dart';
-import 'package:ava/optionsMenu.dart';
-import 'package:ava/lifeStyleSummary.dart';
-import 'package:ava/configurationManager.dart';
+import 'package:ava/screens/optionsMenu.dart';
+import 'package:ava/screens/lifeStyle/lifeStyleSummary.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'package:ava/screens/quiz_page.dart';
-import 'package:ava/carousel.dart';
-import 'package:ava/form_page.dart';
+import 'package:ava/screens/carousel.dart';
+import 'package:ava/screens/form_page.dart';
 import 'package:ava/services/websocket_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.config});
+  MyHomePage({super.key, required this.title});
   final String title;
-  final ConfigurationManager config;
+  final ConfigurationManager config = ConfigurationManager();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -71,17 +71,24 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _navigateToPreviousTask() {
-    setState(() {
-      currentIndex = (currentIndex - 1 + 24) % 24;
-    });
-  }
+ void _navigateToPreviousTask() {
+  setState(() {
+    if (configManager.currentLifeStyle.value.isNotEmpty) {
+      currentIndex =
+          (currentIndex - 1 + configManager.currentLifeStyle.value.length) %
+              configManager.currentLifeStyle.value.length;
+    }
+  });
+}
 
-  void _navigateToNextTask() {
-    setState(() {
-      currentIndex = (currentIndex + 1) % 24;
-    });
-  }
+void _navigateToNextTask() {
+  setState(() {
+    if (configManager.currentLifeStyle.value.isNotEmpty) {
+      currentIndex =
+          (currentIndex + 1) % configManager.currentLifeStyle.value.length;
+    }
+  });
+}
 
   void _optionMenu() {
     Navigator.push(
@@ -175,18 +182,28 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: ValueListenableBuilder<List<Task>>(
                           valueListenable: configManager.currentLifeStyle,
                           builder: (context, lifeStyles, child) {
+                            if (lifeStyles.isEmpty) {
+                              return const Text(
+                                "Aucune tâche disponible pour l'heure actuelle.",
+                                style: TextStyle(fontSize: 16),
+                              );
+                            }
+                            if (currentIndex < 0 || currentIndex >= lifeStyles.length) {
+                              return const Text(
+                                "Index invalide : aucune tâche ne correspond.",
+                                style: TextStyle(fontSize: 16),
+                              );
+                            }
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Tâche : ${lifeStyles[currentIndex].type}',
-                                  style: TextStyle(fontSize: 32),
+                                  style: const TextStyle(fontSize: 32),
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  lifeStyles[currentIndex]
-                                          .description
-                                          .isNotEmpty
+                                  lifeStyles[currentIndex].description.isNotEmpty
                                       ? lifeStyles[currentIndex].description
                                       : "Cette tâche n'a pas de description.",
                                   style: const TextStyle(fontSize: 16),

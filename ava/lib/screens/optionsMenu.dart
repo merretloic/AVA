@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:ava/configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'package:flutter/material.dart';
 
 class OptionsMenu extends StatefulWidget {

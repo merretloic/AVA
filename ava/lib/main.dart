@@ -7,7 +7,7 @@ import 'package:ava/screens/splashscreen_wrapper.dart';
 import 'package:ava/screens/home/home_screen.dart';
 import 'package:ava/screens/authenticate/authenticate_screen.dart';
 import 'package:ava/screens/authenticate/verification_screen.dart';
-import 'package:ava/configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'package:ava/firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -24,7 +24,6 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
   Widget build(BuildContext context) {
-    ConfigurationManager config = ConfigurationManager();
     return StreamProvider<AppUser?>.value(
       value: AuthenticationService().user,
       initialData: null,
@@ -33,7 +32,7 @@ class MyApp extends StatefulWidget {
         debugShowCheckedModeBanner: false,
         home: SplashScreenWrapper(),
         routes: {
-          '/home': (context) => MyHomePage(title: 'Flutter Demo Home Page', config: config),
+          '/home': (context) => MyHomePage(title: 'Flutter Demo Home Page'),
           '/authenticate': (context) => AuthenticateScreen(),
           '/verify': (context) => VerificationScreen(),
         },
@@ -57,7 +56,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     config = ConfigurationManager();
 
-    // Configuration initiale des notifications
     _initializeNotifications();
   }
 
@@ -121,7 +119,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    ConfigurationManager config = ConfigurationManager();
     return StreamProvider<AppUser?>.value(
       value: AuthenticationService().user,
       initialData: null,
@@ -130,7 +127,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         debugShowCheckedModeBanner: false,
         home: SplashScreenWrapper(),
         routes: {
-          '/home': (context) => MyHomePage(title: 'Flutter Demo Home Page', config: config),
+          '/home': (context) => MyHomePage(title: 'Flutter Demo Home Page'),
           '/authenticate': (context) => AuthenticateScreen(),
           '/verify': (context) => VerificationScreen(),
         },

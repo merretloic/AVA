@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 
 class Carousel extends StatelessWidget {
   final ConfigurationManager configManager;
