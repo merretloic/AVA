@@ -4,7 +4,6 @@ import 'package:ava/common/tasks.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class LifeStyleEditingMenu extends StatefulWidget {
   final ConfigurationManager configManager;
   const LifeStyleEditingMenu({super.key, required this.configManager});
@@ -26,10 +25,24 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
     _allLifeStyles = configManager.allLifeStyles.value.isNotEmpty
         ? configManager.allLifeStyles.value
         : [[]];
+    if (_allLifeStyles.length == 1 && _allLifeStyles[0].length > 24) {
+      List<Task> firstList = _allLifeStyles[0];
+      _allLifeStyles = [];
+      for (int i = 0; i < firstList.length; i += 24) {
+        List<Task> sublist = firstList.sublist(
+            i, i + 24 > firstList.length ? firstList.length : i + 24);
+        while (sublist.length < 24) {
+          sublist.add(EmptyTask());
+        }
+        _allLifeStyles.add(sublist);
+      }
+      debugPrint(_allLifeStyles.toString());
+    }
     _activeLifeStyle = configManager.currentLifeStyle.value.isNotEmpty
         ? configManager.currentLifeStyle.value
         : [];
   }
+
   List<Task> _lifeStyle = List<Task>.generate(
       24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
 
@@ -38,56 +51,61 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
       _lifeStyle[id] = task;
     });
   }
+
   Future<void> _saveLifeStylesToFirestore() async {
-  final user = _auth.currentUser;
-  if (user != null) {
-    try {
-      await _firestore
-          .collection('lifestyle')
-          .doc(user.uid)
-          .collection('lifestyle')
-          .doc('lifestylesData')
-          .set({
-        'allLifeStyles': _allLifeStyles.map((lifeStyle) {
-          return lifeStyle.map((task) => task.toMap()).toList();
-        }).expand((e) => e).toList(),
-        'activeLifeStyle': _activeLifeStyle.map((task) => task.toMap()).toList(),
-      });
-    } catch (e) {
-      print("Error saving to Firestore: $e");
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
+        await _firestore
+            .collection('lifestyle')
+            .doc(user.uid)
+            .collection('lifestyle')
+            .doc('lifestylesData')
+            .set({
+          'allLifeStyles': _allLifeStyles
+              .map((lifeStyle) {
+                return lifeStyle.map((task) => task.toMap()).toList();
+              })
+              .expand((e) => e)
+              .toList(),
+          'activeLifeStyle':
+              _activeLifeStyle.map((task) => task.toMap()).toList(),
+        });
+      } catch (e) {
+        print("Error saving to Firestore: $e");
+      }
     }
   }
-}
 
   void _noopCallback(int id, dynamic task) {
     // Fonction vide par défaut
   }
 
-void _confirmLifeStyle() {
-  setState(() {
-    _allLifeStyles.add(List<Task>.from(_lifeStyle));
-    configManager.updateAllLifeStyles(_allLifeStyles);
-    configManager.updateLifeStyle(_allLifeStyles.last);
+  void _confirmLifeStyle() {
+    setState(() {
+      _allLifeStyles.add(List<Task>.from(_lifeStyle));
+      configManager.updateAllLifeStyles(_allLifeStyles);
+      configManager.updateLifeStyle(_allLifeStyles.last);
 
-    _lifeStyle = List<Task>.generate(
-        24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
-  });
-  _saveLifeStylesToFirestore();
-  Navigator.pop(context);
-}
+      _lifeStyle = List<Task>.generate(
+          24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
+    });
+    _saveLifeStylesToFirestore();
+    Navigator.pop(context);
+  }
 
-void _confirmLifeStyleEditing(int index) {
-  setState(() {
-    _allLifeStyles[index] = (List<Task>.from(_lifeStyle));
-    configManager.updateLifeStyle(_allLifeStyles[index]);
-    _activeLifeStyle = _allLifeStyles[index];
+  void _confirmLifeStyleEditing(int index) {
+    setState(() {
+      _allLifeStyles[index] = (List<Task>.from(_lifeStyle));
+      configManager.updateLifeStyle(_allLifeStyles[index]);
+      _activeLifeStyle = _allLifeStyles[index];
 
-    _lifeStyle = List<Task>.generate(
-        24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
-  });
-  _saveLifeStylesToFirestore();
-  Navigator.pop(context);
-}
+      _lifeStyle = List<Task>.generate(
+          24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
+    });
+    _saveLifeStylesToFirestore();
+    Navigator.pop(context);
+  }
 
   Widget _setRender() {
     List<Widget> render = <Widget>[];
