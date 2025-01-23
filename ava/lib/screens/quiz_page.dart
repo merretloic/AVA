@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ava/configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -16,6 +16,7 @@ class _QuizPageState extends State<QuizPage> {
   int _currentQuestionIndex = 0;
   String _selectedAnswer = '';
   List<String> multipleChoices = [];
+  List<Map<String, dynamic>> userAnswers = [];
   List<Map<String, dynamic>> quizQuestions = [
     {
       "type": "single-choice",
@@ -31,52 +32,22 @@ class _QuizPageState extends State<QuizPage> {
       "type": "timeline",
       "question":
           "Combien d'heures de sommeil avez-vous dormi hier soir (basé sur votre style de vie actuel) ?",
-      "options": ["0", "8"]
+      "options": ["0", "14"]
     },
   ];
 
-Future<void> _sendAnswersToFirestore() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    Map<String, dynamic> answers = {};
-    answers['questions'] = [];
-
-    for (var i = 0; i < quizQuestions.length; i++) {
-      final question = quizQuestions[i];
-
-      if (question["type"] == "single-choice") {
-        answers['questions'].add({
-          "question": question["question"],
-          "type": question["type"],
-          "answer": _selectedAnswer,
-        });
-      } else if (question["type"] == "multiple-choice") {
-        answers['questions'].add({
-          "question": question["question"],
-          "type": question["type"],
-          "answer": multipleChoices,
-        });
-      } else if (question["type"] == "timeline") {
-        answers['questions'].add({
-          "question": question["question"],
-          "type": question["type"],
-          "answer": _selectedAnswer,
-        });
-      }
+  Future<void> _sendAnswersToFirestore() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'quizAnswers': userAnswers,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      print("Réponses envoyées avec succès !");
+    } else {
+      print("Aucun utilisateur connecté.");
     }
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set({
-      'quizAnswers': answers,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-    print("Réponses envoyées avec succès !");
-  } else {
-    print("Aucun utilisateur connecté.");
   }
-}
 
   Widget _printQuestionAnswers(
       Map<String, dynamic> currentQuestion, List<String> options) {
@@ -180,16 +151,36 @@ Future<void> _sendAnswersToFirestore() async {
   }
 
   void _nextQuestion() {
+    final currentQuestion = quizQuestions[_currentQuestionIndex];
+
     setState(() {
+      // Stocker la réponse actuelle
+      if (currentQuestion["type"] == "single-choice") {
+        userAnswers.add({
+          "question": currentQuestion["question"],
+          "type": currentQuestion["type"],
+          "answer": _selectedAnswer,
+        });
+      } else if (currentQuestion["type"] == "multiple-choice") {
+        userAnswers.add({
+          "question": currentQuestion["question"],
+          "type": currentQuestion["type"],
+          "answer": multipleChoices,
+        });
+      } else if (currentQuestion["type"] == "timeline") {
+        userAnswers.add({
+          "question": currentQuestion["question"],
+          "type": currentQuestion["type"],
+          "answer": _selectedAnswer,
+        });
+      }
+
       if (_currentQuestionIndex < quizQuestions.length - 1) {
         _currentQuestionIndex++;
         _selectedAnswer = '';
         multipleChoices = [];
       } else {
-        setState(() {
-          widget.configManager.updateIsFormFilled();
-        });
-        // Envoyer les réponses à Firestore avant de quitter
+        widget.configManager.updateIsFormFilled();
         _sendAnswersToFirestore();
         Navigator.pop(context); // Revenir au menu principal
       }

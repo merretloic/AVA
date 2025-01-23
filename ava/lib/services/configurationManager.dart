@@ -1,16 +1,64 @@
 import 'package:flutter/material.dart';
-import './tasks.dart';
+import 'package:ava/common/tasks.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ConfigurationManager {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final ValueNotifier<String> _styleNotifier = ValueNotifier<String>("Day");
   ValueNotifier<List<Task>> _currentLifeStyle = ValueNotifier<List<Task>>(
       List<Task>.generate(24, (index) => EmptyTask()));
   ValueNotifier<List<List<Task>>> _allLifeStyles =
-      ValueNotifier<List<List<Task>>>(
-          [List<Task>.generate(24, (index) => EmptyTask())]);
+      ValueNotifier<List<List<Task>>>([
+    List<Task>.generate(24, (index) => EmptyTask())
+  ]);
   final ValueNotifier<bool> _isFormFilled = ValueNotifier<bool>(false);
   final ValueNotifier<String> _conseils = ValueNotifier<String>("");
 
+  ConfigurationManager() {
+    _initializeLifeStyles();
+  }
+
+Future<void> _initializeLifeStyles() async {
+  final user = _auth.currentUser;
+  if (user != null) {
+    try {
+      final doc = await _firestore
+          .collection('lifestyle')
+          .doc(user.uid)
+          .collection('lifestyle')
+          .doc('lifestylesData')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null) {
+          final allLifeStylesData = data['allLifeStyles'] as List<dynamic>?;
+          if (allLifeStylesData != null) {
+            _allLifeStyles.value = _groupTasksByLifeStyle(
+              allLifeStylesData.map((taskData) => Task.fromMap(taskData)).toList(),
+            );
+          }
+
+          final activeLifeStyleData = data['activeLifeStyle'] as List<dynamic>?;
+          if (activeLifeStyleData != null) {
+            _currentLifeStyle.value = activeLifeStyleData
+                .map((taskData) => Task.fromMap(taskData))
+                .toList();
+          }
+        }
+      }
+    } catch (e) {
+      print("Error loading from Firestore: $e");
+    }
+  }
+}
+
+List<List<Task>> _groupTasksByLifeStyle(List<Task> tasks) {
+  return [tasks];
+}
   String get style => _styleNotifier.value;
 
   void setStyle(String newStyle) {

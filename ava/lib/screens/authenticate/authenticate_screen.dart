@@ -3,7 +3,12 @@ import 'package:ava/common/constants.dart';
 import 'package:ava/common/loading.dart';
 import 'package:ava/services/authentication.dart';
 
+// Importe la classe AboutScreen
+import 'about_screen.dart';
+
 class AuthenticateScreen extends StatefulWidget {
+  const AuthenticateScreen({Key? key}) : super(key: key);
+
   @override
   _AuthenticateScreenState createState() => _AuthenticateScreenState();
 }
@@ -11,12 +16,14 @@ class AuthenticateScreen extends StatefulWidget {
 class _AuthenticateScreenState extends State<AuthenticateScreen> {
   final AuthenticationService _auth = AuthenticationService();
   final _formKey = GlobalKey<FormState>();
-  String error = '';
+
   bool loading = false;
+  bool showSignIn = true; // Gère l’état SignIn vs Register
+  bool showAbout = false; // Gère l’affichage de l’écran À propos
+  String error = '';
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool showSignIn = true;
 
   @override
   void dispose() {
@@ -25,6 +32,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
     super.dispose();
   }
 
+  // Permet de basculer entre SignIn et Register
   void toggleView() {
     setState(() {
       _formKey.currentState?.reset();
@@ -80,6 +88,21 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 1) Si on veut afficher l'écran "À propos", on le retourne directement
+    if (showAbout) {
+      return AboutScreen(
+        // On choisit quel texte afficher sur le bouton en haut à droite
+        buttonLabel: showSignIn ? 'Register' : 'Sign In',
+        onReturn: () {
+          // Au clic, on repasse showAbout à false pour revenir à la page Auth
+          setState(() {
+            showAbout = false;
+          });
+        },
+      );
+    }
+
+    // 2) Sinon, on affiche l’écran d’authentification habituel
     return loading
         ? Loading()
         : Scaffold(
@@ -101,36 +124,62 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                 // Contenu principal
                 Column(
                   children: [
+                    // AppBar
                     AppBar(
                       backgroundColor: Colors.black,
                       elevation: 0.0,
                       leading: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Image.asset('assets/logo.png'), // Logo monochrome
+                        child: Image.asset(
+                          'assets/logo.png', // Logo monochrome
+                        ),
                       ),
                       title: Text(
                         showSignIn ? 'Sign in to AVA' : 'Register to AVA',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       actions: [
+                        // Bouton pour basculer entre Sign In et Register
                         TextButton.icon(
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.person,
                             color: Colors.white,
                           ),
                           label: Text(
                             showSignIn ? 'Register' : 'Sign In',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 16.0,
                             ),
                           ),
                           onPressed: toggleView,
+                        ),
+
+                        // Bouton "À propos"
+                        TextButton.icon(
+                          icon: const Icon(
+                            Icons.info,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'À propos',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                          onPressed: () {
+                            // On n’utilise pas de route, on met juste showAbout = true
+                            setState(() {
+                              showAbout = true;
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -139,24 +188,26 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                       thickness: 1.0,
                       height: 1.0,
                     ),
+
+                    // Formulaire
                     Expanded(
                       child: Center(
                         child: SingleChildScrollView(
                           child: Container(
-                            // Rectangle pour le formulaire
                             decoration: BoxDecoration(
                               color: Colors.black, // Couleur noire opaque
                               borderRadius: BorderRadius.circular(20.0),
                             ),
                             padding: const EdgeInsets.all(20.0),
-                            margin:
-                                const EdgeInsets.symmetric(horizontal: 20.0),
+                            margin: const EdgeInsets.symmetric(horizontal: 20.0),
                             child: Form(
                               key: _formKey,
                               child: Column(
                                 children: [
                                   ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: 400.0),
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 400.0,
+                                    ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.stretch,
@@ -166,13 +217,13 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                               ? 'Welcome Back!'
                                               : 'Create Your Account',
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 28.0,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
                                         ),
-                                        SizedBox(height: 10.0),
+                                        const SizedBox(height: 10.0),
                                         Text(
                                           'Please enter your details below to continue.',
                                           textAlign: TextAlign.center,
@@ -181,18 +232,24 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                             color: Colors.grey[500],
                                           ),
                                         ),
-                                        SizedBox(height: 30.0),
+                                        const SizedBox(height: 30.0),
+
+                                        // Champ email
                                         TextFormField(
                                           controller: emailController,
-                                          style:
-                                              TextStyle(color: Colors.white),
-                                          decoration:
-                                              textInputDecoration.copyWith(
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          decoration: textInputDecoration
+                                              .copyWith(
                                             hintText: 'Email',
                                             hintStyle: TextStyle(
-                                                color: Colors.grey[500]),
-                                            prefixIcon: Icon(Icons.email,
-                                                color: Colors.grey[500]),
+                                              color: Colors.grey[500],
+                                            ),
+                                            prefixIcon: Icon(
+                                              Icons.email,
+                                              color: Colors.grey[500],
+                                            ),
                                             filled: true,
                                             fillColor: Colors.grey[900],
                                             enabledBorder: OutlineInputBorder(
@@ -202,7 +259,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                                   BorderRadius.circular(10.0),
                                             ),
                                             focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                   color: Colors.white),
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
@@ -216,18 +273,24 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                             return null;
                                           },
                                         ),
-                                        SizedBox(height: 20.0),
+                                        const SizedBox(height: 20.0),
+
+                                        // Champ password
                                         TextFormField(
                                           controller: passwordController,
-                                          style:
-                                              TextStyle(color: Colors.white),
-                                          decoration:
-                                              textInputDecoration.copyWith(
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          decoration: textInputDecoration
+                                              .copyWith(
                                             hintText: 'Password',
                                             hintStyle: TextStyle(
-                                                color: Colors.grey[500]),
-                                            prefixIcon: Icon(Icons.lock,
-                                                color: Colors.grey[500]),
+                                              color: Colors.grey[500],
+                                            ),
+                                            prefixIcon: Icon(
+                                              Icons.lock,
+                                              color: Colors.grey[500],
+                                            ),
                                             filled: true,
                                             fillColor: Colors.grey[900],
                                             enabledBorder: OutlineInputBorder(
@@ -237,7 +300,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                                   BorderRadius.circular(10.0),
                                             ),
                                             focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                   color: Colors.white),
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
@@ -252,11 +315,14 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                             return null;
                                           },
                                         ),
-                                        SizedBox(height: 30.0),
+                                        const SizedBox(height: 30.0),
+
+                                        // Bouton Sign In / Register
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 15.0),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 15.0,
+                                            ),
                                             backgroundColor: Colors.white,
                                             foregroundColor: Colors.black,
                                             shape: RoundedRectangleBorder(
@@ -268,7 +334,7 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                             showSignIn
                                                 ? 'Sign In'
                                                 : 'Register',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 16.0,
                                             ),
                                           ),
@@ -278,9 +344,8 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                                 false) {
                                               var email =
                                                   emailController.text.trim();
-                                              var password = passwordController
-                                                  .text
-                                                  .trim();
+                                              var password =
+                                                  passwordController.text.trim();
 
                                               if (showSignIn) {
                                                 await _handleSignIn(
@@ -292,12 +357,14 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                                             }
                                           },
                                         ),
-                                        SizedBox(height: 15.0),
+                                        const SizedBox(height: 15.0),
+
+                                        // Message d'erreur éventuel
                                         if (error.isNotEmpty)
                                           Text(
                                             error,
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.red,
                                               fontSize: 14.0,
                                             ),

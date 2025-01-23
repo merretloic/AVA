@@ -1,4 +1,4 @@
-import 'package:ava/configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'package:flutter/material.dart';
 import 'package:ava/services/websocket_service.dart';
 

@@ -15,12 +15,13 @@ abstract class Task {
     required this.type,
   });
 
-  Task copyWith(
-      {String? name,
-      int? durationInHours,
-      Color? color,
-      Icon? icon,
-      String? description}) {
+  Task copyWith({
+    String? name,
+    int? durationInHours,
+    Color? color,
+    Icon? icon,
+    String? description,
+  }) {
     if (this is EmptyTask) {
       return EmptyTask()
         ..name = name ?? this.name
@@ -75,7 +76,56 @@ abstract class Task {
     }
   }
 
-  // Common method for all task types
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'durationInHours': durationInHours,
+      'description': description,
+      'type': type,
+    };
+  }
+
+  static Task fromMap(Map<String, dynamic> map) {
+    switch (map['type']) {
+      case 'Empty':
+        return EmptyTask();
+      case 'Dormir':
+        return SleepTask(
+          name: map['name'],
+          durationInHours: map['durationInHours'],
+          description: map['description'],
+        );
+      case 'Repas':
+        return EatTask(
+          name: map['name'],
+          durationInHours: map['durationInHours'],
+          foodType: List<String>.from(map['foodType'] ?? []),
+          description: map['description'],
+        );
+      case 'Exercice physique':
+        return RunTask(
+          name: map['name'],
+          durationInHours: map['durationInHours'],
+          targetDistance: map['targetDistance'] ?? 0.0,
+          description: map['description'],
+        );
+      case 'Etudier':
+        return StudyTask(
+          name: map['name'],
+          durationInHours: map['durationInHours'],
+          description: map['description'],
+        );
+      case 'Temps libre':
+        return FreeTimeTask(
+          name: map['name'],
+          durationInHours: map['durationInHours'],
+          description: map['description'],
+        );
+      default:
+        throw Exception('Unknown task type: ${map['type']}');
+    }
+  }
+
   void displayDetails() {
     debugPrint(
         'Task: $name, Duration: $durationInHours hours, Description: $description');
@@ -133,6 +183,11 @@ class EatTask extends Task {
             type: 'Repas');
 
   @override
+  Map<String, dynamic> toMap() {
+    return super.toMap()..addAll({'foodType': foodType});
+  }
+
+  @override
   void displayDetails() {
     super.displayDetails();
     print('Food Type: $foodType');
@@ -152,6 +207,11 @@ class RunTask extends Task {
     required this.targetDistance,
     String description = '',
   }) : super(description: description, type: 'Exercice physique');
+
+  @override
+  Map<String, dynamic> toMap() {
+    return super.toMap()..addAll({'targetDistance': targetDistance});
+  }
 
   @override
   void displayDetails() {

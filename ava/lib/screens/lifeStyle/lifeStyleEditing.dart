@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'configurationManager.dart';
-import 'tasks.dart';
+import 'package:ava/services/configurationManager.dart';
+import 'package:ava/common/tasks.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class LifeStyleEditingMenu extends StatefulWidget {
   final ConfigurationManager configManager;
@@ -14,14 +17,19 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
   late ConfigurationManager configManager;
   late List<List<Task>> _allLifeStyles;
   late List<Task> _activeLifeStyle;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   void initState() {
     super.initState();
     configManager = widget.configManager;
-    _allLifeStyles = configManager.allLifeStyles.value;
-    _activeLifeStyle = configManager.currentLifeStyle.value;
+    _allLifeStyles = configManager.allLifeStyles.value.isNotEmpty
+        ? configManager.allLifeStyles.value
+        : [[]];
+    _activeLifeStyle = configManager.currentLifeStyle.value.isNotEmpty
+        ? configManager.currentLifeStyle.value
+        : [];
   }
-
   List<Task> _lifeStyle = List<Task>.generate(
       24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
 
@@ -30,34 +38,56 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
       _lifeStyle[id] = task;
     });
   }
+  Future<void> _saveLifeStylesToFirestore() async {
+  final user = _auth.currentUser;
+  if (user != null) {
+    try {
+      await _firestore
+          .collection('lifestyle')
+          .doc(user.uid)
+          .collection('lifestyle')
+          .doc('lifestylesData')
+          .set({
+        'allLifeStyles': _allLifeStyles.map((lifeStyle) {
+          return lifeStyle.map((task) => task.toMap()).toList();
+        }).expand((e) => e).toList(),
+        'activeLifeStyle': _activeLifeStyle.map((task) => task.toMap()).toList(),
+      });
+    } catch (e) {
+      print("Error saving to Firestore: $e");
+    }
+  }
+}
 
   void _noopCallback(int id, dynamic task) {
     // Fonction vide par défaut
   }
 
-  void _confirmLifeStyle() {
-    setState(() {
-      _allLifeStyles.add(List<Task>.from(_lifeStyle));
+void _confirmLifeStyle() {
+  setState(() {
+    _allLifeStyles.add(List<Task>.from(_lifeStyle));
+    configManager.updateAllLifeStyles(_allLifeStyles);
+    configManager.updateLifeStyle(_allLifeStyles.last);
 
-      configManager.updateAllLifeStyles(_allLifeStyles);
-      configManager.updateLifeStyle(_allLifeStyles.last);
+    _lifeStyle = List<Task>.generate(
+        24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
+  });
+  _saveLifeStylesToFirestore();
+  Navigator.pop(context);
+}
 
-      _lifeStyle = List<Task>.generate(
-          24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
-    });
-    Navigator.pop(context);
-  }
+void _confirmLifeStyleEditing(int index) {
+  setState(() {
+    _allLifeStyles[index] = (List<Task>.from(_lifeStyle));
+    configManager.updateLifeStyle(_allLifeStyles[index]);
+    _activeLifeStyle = _allLifeStyles[index];
 
-  void _confirmLifeStyleEditing(int index) {
-    setState(() {
-      _allLifeStyles[index] = (List<Task>.from(_lifeStyle));
-      configManager.updateLifeStyle(_allLifeStyles[index]);
-      _activeLifeStyle = _allLifeStyles[index];
-      _lifeStyle = List<Task>.generate(
-          24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
-    });
-    Navigator.pop(context);
-  }
+    _lifeStyle = List<Task>.generate(
+        24, (index) => SleepTask(name: "sommeil", durationInHours: 1));
+  });
+  _saveLifeStylesToFirestore();
+  Navigator.pop(context);
+}
 
   Widget _setRender() {
     List<Widget> render = <Widget>[];
@@ -274,6 +304,7 @@ class _LifeStyleEditingState extends State<LifeStyleEditingMenu> {
                 setState(() {
                   _allLifeStyles.removeAt(j);
                 });
+                _saveLifeStylesToFirestore(); // Sauvegarder sur Firestore
               },
             ),
           ],
@@ -567,7 +598,7 @@ class LifestyleSlot extends StatefulWidget {
   final Offset initPos;
   final Task task;
   final Function(int, Task) onUpdate;
-  final Function(int, Task) onTap; // Nouveau callback pour gérer le clic
+  final Function(int, Task) onTap;
 
   const LifestyleSlot(this.initPos, this.task, this.id, this.lifeStyle,
       this.slot, this.onUpdate, this.onTap);

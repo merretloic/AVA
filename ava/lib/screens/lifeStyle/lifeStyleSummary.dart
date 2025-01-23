@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'configurationManager.dart';
+import 'package:ava/services/configurationManager.dart';
 import 'dart:convert';
 import 'lifeStyleEditing.dart';
 
